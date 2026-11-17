@@ -97,3 +97,9 @@ Recomendado: migrar el shell a Next.js (App Router) para tener rutas de servidor
 ## Fase 3 — experiencia avanzada
 
 Probador sobre fotografía (`TryOnProvider`), avatar 3D solo si representa bien las prendas, tendencias con datos actualizados y verificables (`sourceUrl` por referente), personalización a partir del historial.
+
+## Publicar en GitHub Pages
+
+La web se sirve desde la carpeta `docs/` de la rama `main`
+(Settings → Pages → Deploy from a branch → `main` / `/docs`).
+Para actualizarla: `npm run publicar`, y después commit y push.
