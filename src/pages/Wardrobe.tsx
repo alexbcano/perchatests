@@ -41,7 +41,7 @@ export function Wardrobe() {
   return (
     <div>
       <PageHeader title="Mi armario" lead="Registra lo que ya tienes. Percha lo combina primero y solo propone comprar lo que falta."
-        action={<div className="flex flex-wrap gap-2"><Button variant="outline" onClick={() => setLinks(true)}><Link2 size={16} />Añadir desde enlace</Button><Button onClick={() => setForm(blank())}><Plus size={16} />Añadir prenda</Button></div>} />
+        action={<div className="grid w-full grid-cols-1 gap-2 sm:flex sm:w-auto"><Button onClick={() => setForm(blank())}><Plus size={16} />Añadir prenda</Button><Button variant="outline" onClick={() => setLinks(true)}><Link2 size={16} />Añadir desde enlace</Button></div>} />
 
       {examples > 0 && (
         <Notice>

@@ -86,7 +86,7 @@ export function Profile() {
             <h2 className="display text-2xl">Editar medidas</h2>
             <p className="mb-4 mt-1 text-[13px] text-muted">Mídete con una cinta flexible sobre ropa fina. Solo la altura es obligatoria; cuantas más medidas, más fiable la talla.</p>
             <MeasuresForm value={draft} onChange={setDraft} units={profile.units} errors={errors} />
-            <div className="sticky bottom-[76px] z-10 -mx-4 mt-5 flex flex-wrap items-center gap-3 bg-paper/95 px-4 py-3 backdrop-blur lg:bottom-0 lg:mx-0 lg:px-0">
+            <div className="sticky bottom-[calc(76px+env(safe-area-inset-bottom))] z-10 -mx-6 mt-5 flex flex-wrap items-center gap-3 bg-paper/95 px-6 py-3 backdrop-blur lg:bottom-0 lg:mx-0 lg:px-0">
               <Button onClick={saveMeasures} disabled={!dirty && !profile.isExample}>Guardar medidas</Button>
               {dirty && <Button variant="ghost" onClick={() => { setDraft(profile.measures); setTried(false); }}>Descartar cambios</Button>}
               <span className="text-xs text-muted">{dirty ? 'Tienes cambios sin guardar.' : profile.isExample ? 'Son las medidas de ejemplo: guárdalas para hacerlas tuyas o cámbialas.' : 'Todo guardado.'}</span>

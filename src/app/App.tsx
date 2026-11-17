@@ -82,13 +82,13 @@ export function App() {
         </div>
       </aside>
 
-      <header className="flex items-center justify-between border-b border-line px-4 py-2.5 lg:hidden">
+      <header className="flex items-center justify-between border-b border-line px-6 py-2.5 lg:hidden">
         <button type="button" onClick={() => go('inicio')} className="display text-[1.7rem] italic leading-none">Percha</button>
         <span className="rounded-full border border-dashed border-muted/70 px-2 py-0.5 text-[10px] text-muted">{isDemo ? 'Catálogo de demostración' : `Precios del ${seenLabel(catalog.seenAt)}`}</span>
       </header>
 
       <main id="main-scroll" className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden">
-        <div className="mx-auto max-w-[1400px] px-4 pb-28 pt-5 sm:px-8 lg:pb-12 lg:pt-8">
+        <div className="mx-auto max-w-[1400px] px-6 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-6 sm:px-8 lg:pb-12 lg:pt-8">
           <Page key={route + mode} />
         </div>
       </main>

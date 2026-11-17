@@ -114,7 +114,7 @@ export function Create() {
             )}
           </div>
 
-          <div className="sticky bottom-[76px] z-10 -mx-4 bg-paper/95 px-4 py-3 backdrop-blur lg:bottom-0 xl:static xl:mx-0 xl:bg-transparent xl:p-0">
+          <div className="sticky bottom-[calc(76px+env(safe-area-inset-bottom))] z-10 -mx-6 bg-paper/95 px-6 py-3 backdrop-blur lg:bottom-0 xl:static xl:mx-0 xl:bg-transparent xl:p-0">
             <Button type="submit" size="lg" variant="accent" block><Sparkles size={17} />Generar outfits</Button>
           </div>
         </form>

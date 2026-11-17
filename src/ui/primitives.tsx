@@ -113,12 +113,12 @@ export function Sheet({ open, onClose, title, children, wide, footer }: { open: 
       <div className="anim-fade absolute inset-0 bg-ink/45" onClick={onClose} aria-hidden />
       <div ref={ref} tabIndex={-1} role="dialog" aria-modal="true" aria-label={title}
         className={cx('anim-sheet relative flex max-h-[92%] w-full flex-col rounded-t-2xl bg-surface shadow-sheet outline-none sm:rounded-md', wide ? 'sm:max-w-3xl' : 'sm:max-w-lg')}>
-        <div className="flex items-center justify-between gap-4 border-b border-line px-5 py-3.5">
+        <div className="flex items-center justify-between gap-4 border-b border-line px-6 py-3.5">
           <h2 className="text-base font-semibold">{title}</h2>
           <IconButton label="Cerrar" onClick={onClose} className="-mr-2 bg-transparent"><X size={18} /></IconButton>
         </div>
-        <div className="overflow-y-auto px-5 py-5">{children}</div>
-        {footer && <div className="flex flex-wrap justify-end gap-2 border-t border-line px-5 py-3.5">{footer}</div>}
+        <div className="overflow-y-auto px-6 py-5">{children}</div>
+        {footer && <div className="flex flex-wrap justify-end gap-2 border-t border-line px-6 pt-3.5 pb-[calc(0.875rem+env(safe-area-inset-bottom))]">{footer}</div>}
       </div>
     </div>
   );

@@ -38,7 +38,7 @@ export function OutfitDetail() {
 
   return (
     <div ref={scroller} className="anim-fade fixed inset-0 z-40 overflow-y-auto bg-paper">
-      <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-line bg-paper/90 px-4 py-2.5 backdrop-blur sm:px-8">
+      <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-line bg-paper/90 px-6 py-2.5 backdrop-blur sm:px-8">
         <Button variant="ghost" size="sm" onClick={() => openOutfit(null)} className="-ml-2"><ArrowLeft size={17} />Volver</Button>
         <div className="flex items-center gap-1.5">
           <IconButton label={comparing ? 'Quitar de la comparación' : 'Añadir a la comparación'} active={comparing} onClick={() => toggleCompare(outfit)}><Columns2 size={17} /></IconButton>
@@ -48,7 +48,7 @@ export function OutfitDetail() {
         </div>
       </div>
 
-      <div className="mx-auto grid max-w-6xl gap-x-10 gap-y-6 px-4 pb-24 pt-5 sm:px-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+      <div className="mx-auto grid max-w-6xl gap-x-10 gap-y-6 px-6 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-5 sm:px-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
         <div className="lg:sticky lg:top-20 lg:self-start">
           <div className="relative mx-auto aspect-[3/4] w-full max-w-md overflow-hidden rounded-sm lg:max-w-none">
             <LookImage items={items} backdrop={outfit.backdrop} className="anim-cover h-full w-full" label={`Imagen de ${outfit.name}`} />
@@ -93,7 +93,7 @@ export function OutfitDetail() {
             </ul>
           </section>
 
-          <div className="sticky top-[57px] z-[5] -mx-4 mt-7 bg-paper/95 px-4 py-2 backdrop-blur sm:-mx-2 sm:px-2">
+          <div className="sticky top-[57px] z-[5] -mx-6 mt-7 bg-paper/95 px-6 py-2 backdrop-blur sm:-mx-2 sm:px-2">
             <Segmented label="Secciones del look" value={tab} onChange={setTab} options={[{ value: 'prendas', label: `Prendas (${items.length})` }, { value: 'probador', label: 'Probador' }, { value: 'consejos', label: 'Consejos' }]} />
           </div>
           <div className="mt-4">

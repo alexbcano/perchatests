@@ -78,7 +78,7 @@ export function Home() {
             <button type="button" onClick={() => go('perfil')} className="text-[13px] underline decoration-line underline-offset-4">Ajustar mis gustos</button>
           </div>
           <p className="mt-1 text-[13px] text-muted">Según tus estilos ({prefs.styles.map(styleName).join(', ') || 'sin elegir'}), {seasonLabel(prefs.season).toLowerCase()} y un máximo de {prefs.budget ? euro(prefs.budget) : 'presupuesto libre'}.</p>
-          <div className="no-scrollbar -mx-4 mt-5 flex snap-x gap-4 overflow-x-auto px-4 sm:mx-0 sm:grid sm:grid-cols-3 sm:px-0">
+          <div className="no-scrollbar -mx-6 mt-5 flex snap-x gap-4 overflow-x-auto px-6 sm:mx-0 sm:grid sm:grid-cols-3 sm:px-0">
             {recs.slice(1).map((o) => <div key={o.id} className="w-[62%] shrink-0 snap-start sm:w-auto"><OutfitCard outfit={o} /></div>)}
           </div>
         </section>
@@ -105,7 +105,7 @@ export function Home() {
           <h2 className="display text-3xl">Explora por estilo</h2>
           <button type="button" onClick={() => go('tendencias')} className="text-[13px] underline decoration-line underline-offset-4">Ver guía de estilos</button>
         </div>
-        <div className="no-scrollbar -mx-4 mt-5 flex snap-x gap-3 overflow-x-auto px-4 lg:mx-0 lg:px-0">
+        <div className="no-scrollbar -mx-6 mt-5 flex snap-x gap-3 overflow-x-auto px-6 lg:mx-0 lg:px-0">
           {styleTiles.map(({ style, outfit }) => (
             <button key={style.key} type="button" onClick={() => createWith({ styles: [style.key] })} className="group w-36 shrink-0 snap-start text-left sm:w-44">
               <span className="block aspect-[3/4] overflow-hidden rounded-sm"><LookImage items={resolveOutfit(outfit.pieces, [])} backdrop={outfit.backdrop} className="h-full w-full transition-transform duration-500 group-hover:scale-105" label={`Ilustración de un look ${style.name}`} /></span>
