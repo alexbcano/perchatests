@@ -7,6 +7,7 @@ import { CATEGORY_LABEL, CATEGORY_ORDER, CATEGORY_PLURAL, GARMENT_TYPES, SEASONS
 import { COLORS, COLOR_KEYS, colorName } from '@/data/demo/colors';
 import { wardrobeToProduct } from '@/services/catalog';
 import { ProductThumb } from '@/ui/figure';
+import { WardrobeGaps } from './WardrobeGaps';
 import { hostOf, readStoreLink, refineWithPreview, sameLink, splitLinks } from '@/features/wardrobe/fromLink';
 import { fetchPreview, PREVIEW_ERROR_TEXT } from '@/services/linkPreview';
 import { Button, Chip, ColorDot, Confirm, cx, Empty, Field, IconButton, inputCls, Notice, PageHeader, Pill, readImage, Segmented, Sheet } from '@/ui/primitives';
@@ -79,6 +80,8 @@ export function Wardrobe() {
           </div>
         </div>
       )}
+
+      <WardrobeGaps />
 
       {wardrobe.length === 0 ? (
         <div className="mt-6"><Empty title="Tu armario está vacío" body="Añade las prendas que más usas: con una parte de arriba, una de abajo y un calzado ya se pueden crear looks sin comprar nada." action={<div className="flex flex-wrap justify-center gap-2"><Button onClick={() => setForm(blank())}><Plus size={16} />Añadir mi primera prenda</Button><Button variant="outline" onClick={() => setLinks(true)}><Link2 size={16} />Pegar enlace de tienda</Button></div>} /></div>
