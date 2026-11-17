@@ -1,0 +1,26 @@
+// REFERENTES REALES — creadores de moda masculina citados en listas públicas.
+// Nombre, usuario y descripción salen de la fuente enlazada en sourceUrl. Los estilos asociados son
+// una clasificación orientativa de Percha a partir de esa descripción, no una afirmación de la persona.
+// Percha no afirma que ninguno de ellos recomiende un producto concreto.
+import type { Referent } from '@/domain/types';
+
+const KOL = 'https://www.kolsquare.com/es/top-influencers/top-influencers-moda-hombre-instagram-en-espana';
+const UPC = 'https://theupcoming.co.uk/?p=414950';
+
+export const REAL_REFERENTS: Referent[] = [
+  // Elegidos por el usuario (16 nov 2026). Descripción según la fuente enlazada; estilos orientativos.
+  { id: 'y01', demo: false, name: 'Nil Ojeda', handle: '@nilojeda', country: 'España', language: 'es', content: 'Vídeo largo', styles: ['street', 'casual', 'skater'], bio: 'Creador de contenido y fundador de Milfshakes, marca de streetwear que la prensa del sector sitúa entre las de referencia para la generación Z.', signature: ['Sudadera amplia', 'Pantalón ancho', 'Gráficos'], palette: [], sourceUrl: 'https://www.modaes.com/empresas/milfshakes-belen-esteban-batidos-y-virales-con-vicio-para-vender' },
+  { id: 'y02', demo: false, name: 'Spicy Jaime', handle: '@spicyjaime', country: 'España', language: 'es', content: 'Vídeo corto', styles: ['street', 'smart', 'minimal'], bio: 'Creador de moda y estilo de vida en TikTok: inspiración que va de la alta costura al streetwear.', signature: [], palette: [], sourceUrl: 'https://es.famousbirthdays.com/people/spicy-jaime.html' },
+  { id: 'y03', demo: false, name: 'ByCalitos', handle: '@bycalitos', country: 'España', language: 'es', content: 'Vídeo largo', styles: ['street', 'vintage', 'y2k'], bio: 'Creador de contenido. En una entrevista explica su proyecto Scrapworld: acercar ropa de lujo o de gama alta a precios más bajos.', signature: [], palette: [], sourceUrl: 'https://www.neo2.com/?p=534385' },
+  { id: 'y04', demo: false, name: 'NotDumas', handle: '@notdumas', country: 'España', language: 'es', content: 'Fotografía', styles: ['minimal', 'street', 'casual'], bio: 'Creador de Almería conocido, según la fuente, por una moda limpia y con estilo y por su contenido de estilo de vida.', signature: [], palette: [], sourceUrl: 'https://es.famousbirthdays.com/people/notdumas.html' },
+  { id: 'x01', demo: false, name: 'Jon Kortajarena', handle: '@jonkortajarena', country: 'España', language: 'es', content: 'Fotografía', styles: ['smart', 'formal', 'quiet'], bio: 'Modelo. La fuente destaca su elegancia y un estilo propio pensado para un público amplio.', signature: [], palette: [], sourceUrl: KOL },
+  { id: 'x02', demo: false, name: 'Manu Ríos', handle: '@manurios', country: 'España', language: 'es', content: 'Fotografía', styles: ['smart', 'street'], bio: 'Actor y músico con proyección internacional en moda y colaboraciones con firmas de lujo, según la fuente.', signature: [], palette: [], sourceUrl: KOL },
+  { id: 'x03', demo: false, name: 'Marc Forné', handle: '@marcforne', country: 'España', language: 'es', content: 'Fotografía', styles: ['minimal', 'smart'], bio: 'Modelo, fotógrafo y creador de contenido de moda.', signature: [], palette: [], sourceUrl: KOL },
+  { id: 'x04', demo: false, name: 'Juan Avellaneda', handle: '@avellaneda_eu', country: 'España', language: 'es', content: 'Fotografía', styles: ['formal', 'smart', 'oldmoney'], bio: 'Diseñador. La fuente describe su estilo como elegante y contemporáneo.', signature: [], palette: [], sourceUrl: KOL },
+  { id: 'x05', demo: false, name: 'Pelayo Díaz', handle: '@pelayodiaz', country: 'España', language: 'es', content: 'Fotografía', styles: ['smart', 'street', 'vintage'], bio: 'Estilista y diseñador, colaborador habitual de televisión en temas de moda.', signature: [], palette: [], sourceUrl: KOL },
+  { id: 'x06', demo: false, name: 'Daniel Illescas', handle: '@danielillescas', country: 'España', language: 'es', content: 'Fotografía', styles: ['casual', 'smart'], bio: 'Modelo y autor. Combina moda, estilo de vida y viajes.', signature: [], palette: [], sourceUrl: KOL },
+  { id: 'x07', demo: false, name: 'Andrés Velencoso', handle: '@andresvelencoso', country: 'España', language: 'es', content: 'Fotografía', styles: ['smart', 'casual', 'quiet'], bio: 'Modelo y actor: moda combinada con trabajo audiovisual.', signature: [], palette: [], sourceUrl: KOL },
+  { id: 'x08', demo: false, name: 'Pablo Garna', handle: '@pablogarna', country: 'España', language: 'es', content: 'Fotografía', styles: ['casual', 'smart'], bio: 'Modelo y creador de contenido de moda y estilo de vida.', signature: [], palette: [], sourceUrl: KOL },
+  { id: 'x09', demo: false, name: 'Jose Zuniga', handle: 'TeachingMensFashion', country: 'Estados Unidos', language: 'en', content: 'Vídeo largo', styles: ['casual', 'smart', 'street'], bio: "Men's style coach on YouTube: wardrobe advice, haircuts and grooming.", signature: [], palette: [], sourceUrl: UPC },
+  { id: 'x10', demo: false, name: 'Aaron Marino', handle: 'alpha m.', country: 'Estados Unidos', language: 'en', content: 'Vídeo largo', styles: ['smart', 'business', 'casual'], bio: "Lifestyle coach on YouTube covering men's image, grooming and self-improvement.", signature: [], palette: [], sourceUrl: UPC },
+];

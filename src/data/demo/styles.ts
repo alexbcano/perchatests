@@ -1,0 +1,40 @@
+// Guía editorial de estilos. Texto propio, no datos de tendencia en tiempo real.
+import type { StyleInfo, StyleKey } from '@/domain/types';
+
+export const STYLES: StyleInfo[] = [
+  { key: 'street', name: 'Streetwear', line: 'Volumen abajo, gráfico arriba', about: 'Siluetas amplias, capas cortas y zapatillas con presencia. El conjunto se construye desde el calzado hacia arriba.', keyPieces: ['Sudadera con capucha', 'Vaquero ancho', 'Bomber', 'Zapatilla voluminosa', 'Gorra'], palette: ['negro', 'gris', 'oliva', 'crudo'], related: ['skater', 'y2k', 'tech', 'casual'], formality: 1.5, trend: 'Capas cortas sobre pantalón muy ancho.' },
+  { key: 'oldmoney', name: 'Old Money', line: 'Herencia sin logotipos', about: 'Punto trenzado, camisa Oxford, mocasín y tonos de club náutico. Todo parece llevar años en el armario y sentar perfecto.', keyPieces: ['Polo de punto', 'Camisa Oxford', 'Jersey trenzado', 'Mocasín', 'Gabardina'], palette: ['marino', 'crudo', 'bosque', 'camel', 'burdeos'], related: ['quiet', 'business', 'smart', 'formal'], formality: 3.8, trend: 'Polo de punto con pantalón de pinzas.' },
+  { key: 'casual', name: 'Casual', line: 'Fácil y sin esfuerzo', about: 'Prendas cómodas y combinables para el día a día: vaquero recto, camiseta buena y una capa ligera.', keyPieces: ['Camiseta lisa', 'Vaquero recto', 'Sobrecamisa', 'Zapatilla lisa'], palette: ['denim', 'blanco', 'gris', 'azul', 'beige'], related: ['smart', 'vintage', 'minimal', 'street'], formality: 2, trend: 'Sobrecamisa como chaqueta de entretiempo.' },
+  { key: 'smart', name: 'Smart Casual', line: 'Arreglado sin corbata', about: 'Mezcla una pieza de sastrería con otra informal: americana con camiseta, pantalón de pinzas con zapatilla lisa.', keyPieces: ['Americana sin estructura', 'Jersey fino', 'Chino', 'Bota Chelsea'], palette: ['marino', 'gris', 'crudo', 'chocolate'], related: ['business', 'casual', 'minimal', 'quiet'], formality: 3.3, trend: 'Zapatilla blanca de piel con pantalón de vestir.' },
+  { key: 'minimal', name: 'Minimalista', line: 'Menos piezas, mejores proporciones', about: 'Líneas limpias, paleta corta y cero adornos. El interés está en el corte y en cómo cae el tejido.', keyPieces: ['Camiseta de punto fino', 'Pantalón ancho de pinzas', 'Abrigo largo', 'Cuello alto'], palette: ['negro', 'crudo', 'gris', 'carbon'], related: ['quiet', 'smart', 'casual'], formality: 3, trend: 'Tonos crudos de la cabeza a los pies.' },
+  { key: 'tech', name: 'Techwear', line: 'Función a la vista', about: 'Tejidos impermeables, bolsillos útiles y negro casi total. Inspirado en la ropa de montaña llevada a la ciudad.', keyPieces: ['Chaqueta impermeable', 'Cargo técnico', 'Zapatilla de suela gruesa', 'Bandolera'], palette: ['negro', 'carbon', 'plata', 'oliva'], related: ['gorp', 'street', 'sporty'], formality: 1.5, trend: 'Monocromo negro con un único detalle reflectante.' },
+  { key: 'y2k', name: 'Y2K', line: 'El 2000 sin ironía', about: 'Camiseta corta, pantalón paracaídas, gafas estrechas y brillos metálicos. Contraste entre arriba ceñido y abajo enorme.', keyPieces: ['Camiseta corta', 'Pantalón paracaídas', 'Minifalda vaquera', 'Gafas estrechas'], palette: ['rosa', 'plata', 'lila', 'azulclaro'], related: ['street', 'vintage', 'skater'], formality: 1.3, trend: 'Plata y vaquero claro.' },
+  { key: 'vintage', name: 'Vintage', line: 'Archivo y lavados', about: 'Pana, franela, vaquero gastado y colores con historia. Mejor si parece encontrado en una tienda de segunda mano.', keyPieces: ['Sobrecamisa de pana', 'Vaquero recto', 'Sudadera lavada', 'Zapatilla de lona'], palette: ['marron', 'burdeos', 'mostaza', 'denim', 'crudo'], related: ['casual', 'skater', 'oldmoney', 'gorp'], formality: 2, trend: 'Pana ancha en tonos tierra.' },
+  { key: 'skater', name: 'Skater', line: 'Resistente y suelto', about: 'Pantalón de trabajo holgado, camiseta gráfica y zapatilla plana de ante. Ropa pensada para moverse y caerse.', keyPieces: ['Camiseta gráfica', 'Pantalón corto de trabajo', 'Zapatilla de skate', 'Gorro'], palette: ['negro', 'carbon', 'bosque', 'burdeos'], related: ['street', 'vintage', 'casual'], formality: 1.2, trend: 'Pantalón de trabajo con camisa de franela abierta.' },
+  { key: 'formal', name: 'Formal', line: 'Sastrería completa', about: 'Americana y pantalón a juego, camisa de popelín y zapato de cordones. El ajuste de hombros y el largo del bajo lo deciden todo.', keyPieces: ['Americana de lana', 'Pantalón de traje', 'Camisa de popelín', 'Zapato derby'], palette: ['marino', 'carbon', 'blanco', 'negro'], related: ['business', 'oldmoney', 'quiet'], formality: 4.8, trend: 'Traje marino con cuello alto en vez de camisa.' },
+  { key: 'sporty', name: 'Sporty', line: 'Del entrenamiento a la calle', about: 'Tejidos técnicos, jogger y zapatilla de running. Cómodo y con líneas deportivas visibles.', keyPieces: ['Camiseta técnica', 'Jogger', 'Cortavientos', 'Zapatilla de running'], palette: ['negro', 'gris', 'azul', 'blanco'], related: ['gorp', 'street', 'tech', 'casual'], formality: 1, trend: 'Chándal retro con zapatilla de running.' },
+  { key: 'quiet', name: 'Quiet Luxury', line: 'Calidad que no se anuncia', about: 'Lana, cachemir y piel en tonos neutros, sin un solo logotipo. La diferencia está en el tejido y en el corte.', keyPieces: ['Jersey de merino', 'Abrigo de paño', 'Pantalón de pinzas', 'Bandolera de piel'], palette: ['camel', 'crudo', 'gris', 'chocolate', 'negro'], related: ['minimal', 'oldmoney', 'smart', 'business'], formality: 3.8, trend: 'Camel y gris en capas de distinto grosor.' },
+  { key: 'gorp', name: 'Gorpcore', line: 'Montaña en la acera', about: 'Forro polar, pantalón de senderismo y zapatilla de trail. Capas funcionales con colores de equipo de monte.', keyPieces: ['Forro polar', 'Chaleco acolchado', 'Pantalón de senderismo', 'Zapatilla de trail'], palette: ['salvia', 'oliva', 'naranja', 'carbon', 'marron'], related: ['tech', 'sporty', 'vintage'], formality: 1.2, trend: 'Polar claro con pantalón técnico oscuro.' },
+  { key: 'business', name: 'Business Casual', line: 'Oficina sin traje', about: 'Camisa o punto fino, chino o pantalón de vestir y zapato de piel. Profesional, pero sin corbata ni conjunto completo.', keyPieces: ['Camisa Oxford', 'Chino', 'Chaleco acolchado', 'Mocasín'], palette: ['marino', 'azulclaro', 'beige', 'gris', 'marron'], related: ['smart', 'oldmoney', 'formal', 'quiet'], formality: 3.8, trend: 'Sobrecamisa de lana en lugar de americana.' },
+];
+
+export const styleByKey = (k: StyleKey) => STYLES.find((s) => s.key === k)!;
+export const styleName = (k: StyleKey) => styleByKey(k).name;
+
+/** Nombres para los looks generados, por estilo. */
+export const LOOK_NAMES: Record<StyleKey, string[]> = {
+  street: ['Asfalto', 'Línea seis', 'Doble capa', 'Sábado tarde', 'Bloque norte', 'Fuera de hora'],
+  oldmoney: ['Club de regatas', 'Domingo en la finca', 'Herencia', 'Media tarde', 'Biblioteca', 'Paseo marítimo'],
+  casual: ['Café de las once', 'Sin prisa', 'Fin de semana largo', 'Barrio', 'Luz de tarde', 'Mercado'],
+  smart: ['Reunión a las cinco', 'Afterwork', 'Primera cita', 'Galería', 'Jueves', 'Mesa para dos'],
+  minimal: ['Línea limpia', 'Tono sobre tono', 'Silencio', 'Estudio', 'Punto y aparte', 'Blanco roto'],
+  tech: ['Capa tres', 'Turno de noche', 'Lluvia fina', 'Sector siete', 'Sombra', 'Cota cero'],
+  y2k: ['Dos mil', 'Cromo', 'Señal de módem', 'Doble cero', 'Píxel', 'Brillo'],
+  vintage: ['Rastro', 'Cara B', 'Archivo', 'Carretera secundaria', 'Tocadiscos', 'Súper ocho'],
+  skater: ['Bordillo', 'Plaza', 'Media pipa', 'Lija', 'Tarde larga', 'Hormigón'],
+  formal: ['Hora en punto', 'Sala de juntas', 'Gala', 'Protocolo', 'Brindis', 'Estreno'],
+  sporty: ['Calentamiento', 'Pista dos', 'Recuperación', 'Tiempo parcial', 'Primera hora', 'Circuito'],
+  quiet: ['Sin etiqueta', 'Cachemir', 'Voz baja', 'Sobremesa', 'Luz natural', 'Casa de campo'],
+  gorp: ['Cumbre baja', 'Sendero', 'Refugio', 'Collado', 'Niebla', 'Ruta corta'],
+  business: ['Lunes', 'Planta cuarta', 'Agenda', 'Comida de equipo', 'Presentación', 'Viernes informal'],
+};

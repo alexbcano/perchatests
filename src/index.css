@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Layout: columna de navegación fija + lienzo editorial; ilustración grande, interfaz en tinta sobre tiza. */
+:root {
+  --paper: #f2f3f6;
+  --surface: #ffffff;
+  --ink: #14182b;
+  --muted: #5d6279;
+  --line: #dcdfe9;
+  --tile: #e9ebf1;
+  --tile-strong: #cfd3df;
+  --accent: #2a3fe5;
+  --accent-ink: #ffffff;
+  --accent-soft: #e5e8fd;
+  --ok: #1c7448;
+  --ok-soft: #dff1e7;
+  --warn: #99580a;
+  --warn-soft: #f8ecd3;
+  --bad: #b02f2a;
+  --bad-soft: #f9e1df;
+  --font-display: 'Bodoni Moda', Didot, 'Bodoni MT', Georgia, serif;
+  --font-sans: 'Instrument Sans', 'Helvetica Neue', Arial, sans-serif;
+  color-scheme: light;
+}
+:root[data-theme='dark'] {
+  --paper: #0e111d;
+  --surface: #171b2c;
+  --ink: #eceef8;
+  --muted: #a0a6c0;
+  --line: #2b3049;
+  --tile: #20253a;
+  --tile-strong: #3a4160;
+  --accent: #8292ff;
+  --accent-ink: #0e111d;
+  --accent-soft: #222a58;
+  --ok: #6fd3a0;
+  --ok-soft: #173427;
+  --warn: #f0be6a;
+  --warn-soft: #3a2c10;
+  --bad: #ff9690;
+  --bad-soft: #401a18;
+  color-scheme: dark;
+}
+
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+h1, h2, h3 { text-wrap: balance; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+input[type='range'] { accent-color: var(--accent); }
+.tabular { font-variant-numeric: tabular-nums; }
+.display { font-family: var(--font-display); font-optical-sizing: auto; letter-spacing: -0.01em; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+
+@keyframes sheet-in { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes cover-in { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0 0 0 0); } }
+.anim-sheet { animation: sheet-in 0.26s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.anim-fade { animation: fade-in 0.2s ease-out; }
+.anim-cover { animation: cover-in 0.7s cubic-bezier(0.2, 0.8, 0.2, 1); }
+@media (prefers-reduced-motion: reduce) {
+  .anim-sheet, .anim-fade, .anim-cover { animation: none; }
+  * { scroll-behavior: auto !important; transition: none !important; }
+}
