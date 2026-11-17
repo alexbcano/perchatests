@@ -103,3 +103,23 @@ export function splitLinks(text: string): string[] {
 export function hostOf(url: string): string {
   try { return new URL(url).hostname.replace(/^www\d*\./, ''); } catch { return 'la tienda'; }
 }
+
+/** Con el título real de la ficha se afinan nombre, tipo y color (el título manda sobre la dirección). */
+export function refineWithPreview(item: WardrobeItem, p: { title?: string; image?: string }, opts: { keepName?: boolean } = {}): WardrobeItem {
+  const next = { ...item };
+  if (p.image && !item.photo) next.imageUrl = item.imageUrl || p.image;
+  if (p.title && !item.catalogId) {
+    const t = plain(p.title);
+    const type = TYPES.find(([re]) => re.test(t))?.[1];
+    const color = COLORS.find(([re]) => re.test(t))?.[1];
+    if (type) next.type = type;
+    if (color) next.color = color;
+    if (!opts.keepName) next.name = p.title.length > 70 ? p.title.slice(0, 70).trim() + '…' : p.title;
+  }
+  return next;
+}
+
+/** Dos enlaces son la misma prenda si coinciden tienda y ruta (sin parámetros ni barra final). */
+export function sameLink(a: string, b: string): boolean {
+  try { return path(new URL(a)) === path(new URL(b)); } catch { return a === b; }
+}

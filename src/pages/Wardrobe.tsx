@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { Camera, ExternalLink, Link2, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Camera, ExternalLink, ImageDown, Link2, Loader2, Pencil, Plus, Trash2 } from 'lucide-react';
 import type { Category, ColorKey, GarmentType, Season, WardrobeItem } from '@/domain/types';
 import { uid, useApp } from '@/app/store';
 import { createWith } from '@/app/router';
@@ -7,7 +7,8 @@ import { CATEGORY_LABEL, CATEGORY_ORDER, CATEGORY_PLURAL, GARMENT_TYPES, SEASONS
 import { COLORS, COLOR_KEYS, colorName } from '@/data/demo/colors';
 import { wardrobeToProduct } from '@/services/catalog';
 import { ProductThumb } from '@/ui/figure';
-import { hostOf, readStoreLink, splitLinks } from '@/features/wardrobe/fromLink';
+import { hostOf, readStoreLink, refineWithPreview, sameLink, splitLinks } from '@/features/wardrobe/fromLink';
+import { fetchPreview, PREVIEW_ERROR_TEXT } from '@/services/linkPreview';
 import { Button, Chip, ColorDot, Confirm, cx, Empty, Field, IconButton, inputCls, Notice, PageHeader, Pill, readImage, Segmented, Sheet } from '@/ui/primitives';
 
 const blank = (): WardrobeItem => ({ id: uid('w'), name: '', type: 'tee', brand: '', color: 'blanco', seasons: [currentSeason()], addedAt: Date.now() });
@@ -19,7 +20,7 @@ export function Wardrobe() {
   const [color, setColor] = useState('');
   const [season, setSeason] = useState('');
   const [q, setQ] = useState('');
-  const [form, setForm] = useState<WardrobeItem | null>(null);
+  const [form, setForm] = useState<(WardrobeItem & { lookMsg?: string }) | null>(null);
   const [del, setDel] = useState<WardrobeItem | null>(null);
   const [links, setLinks] = useState(false);
   const examples = wardrobe.filter((w) => w.example).length;
@@ -36,6 +37,20 @@ export function Wardrobe() {
     patch('wardrobe', (cur) => (exists ? cur.map((w) => (w.id === item.id ? item : w)) : [item, ...cur]));
     setForm(null);
     notify(exists ? 'Prenda actualizada' : 'Prenda añadida a tu armario');
+  };
+
+  // Busca la foto de cada prenda nueva, de una en una, y la añade cuando llega.
+  const fillPhotos = async (items: WardrobeItem[]) => {
+    let found = 0; let limit = false;
+    for (const it of items) {
+      if (!it.url || it.imageUrl || it.photo) continue;
+      const r = await fetchPreview(it.url);
+      if (!r.ok) { if (r.error === 'limit') { limit = true; break; } continue; }
+      found++;
+      patch('wardrobe', (cur) => cur.map((w) => (w.id === it.id ? refineWithPreview(w, r.preview) : w)));
+    }
+    const todo = items.filter((i) => i.url && !i.imageUrl && !i.photo).length;
+    if (todo) notify(limit ? `Fotos encontradas: ${found} de ${todo}. Se ha llegado al límite de hoy; las demás, mañana desde «Editar».` : `Fotos encontradas: ${found} de ${todo}.${found < todo ? ' Las que faltan las puedes subir desde «Editar».' : ''}`);
   };
 
   return (
@@ -98,22 +113,31 @@ export function Wardrobe() {
 
       <WardrobeForm value={form} onClose={() => setForm(null)} onSave={save} />
       <LinkSheet open={links} onClose={() => setLinks(false)}
+        existing={(url) => wardrobe.find((w) => w.url && sameLink(w.url, url))}
         onOne={(item) => { setLinks(false); setForm(item); }}
-        onMany={(items) => { patch('wardrobe', (cur) => [...items, ...cur]); setLinks(false); notify(`${items.length} prendas añadidas. Repasa el tipo y el color de cada una.`); }} />
+        onMany={(items, skipped) => {
+          setLinks(false);
+          if (items.length === 0) { notify('Esas prendas ya estaban en tu armario'); return; }
+          patch('wardrobe', (cur) => [...items, ...cur]);
+          notify(`${items.length} prendas añadidas${skipped ? ` (${skipped} ya las tenías)` : ''}. Buscando sus fotos…`);
+          void fillPhotos(items);
+        }} />
       <Confirm open={!!del} title="Eliminar prenda" body={`«${del?.name}» se quitará de tu armario${del?.photo ? ' y su fotografía se borrará' : ''}.`} action="Eliminar" onClose={() => setDel(null)}
         onConfirm={() => { patch('wardrobe', (cur) => cur.filter((w) => w.id !== del!.id)); notify('Prenda eliminada'); }} />
     </div>
   );
 }
 
-function WardrobeForm({ value, onClose, onSave }: { value: WardrobeItem | null; onClose: () => void; onSave: (w: WardrobeItem) => void }) {
+function WardrobeForm({ value, onClose, onSave }: { value: (WardrobeItem & { lookMsg?: string }) | null; onClose: () => void; onSave: (w: WardrobeItem) => void }) {
   const [d, setD] = useState<WardrobeItem | null>(null);
   const [key, setKey] = useState<string | null>(null);
   const [tried, setTried] = useState(false);
   const [photoErr, setPhotoErr] = useState<string | null>(null);
   const file = useRef<HTMLInputElement>(null);
+  const [looking, setLooking] = useState(false);
+  const [lookMsg, setLookMsg] = useState<string | null>(null);
   const wasSaved = useApp((s) => !!value && s.wardrobe.some((w) => w.id === value.id));
-  if (value && value.id !== key) { setKey(value.id); setD(value); setTried(false); setPhotoErr(null); }
+  if (value && value.id !== key) { setKey(value.id); setD(value); setTried(false); setPhotoErr(null); setLookMsg(value.lookMsg ?? null); }
   if (!value && key) { setKey(null); setD(null); }
   const set = (p: Partial<WardrobeItem>) => setD((cur) => (cur ? { ...cur, ...p } : cur));
   const seasonErr = tried && d && d.seasons.length === 0 ? 'Elige al menos una temporada.' : null;
@@ -121,7 +145,7 @@ function WardrobeForm({ value, onClose, onSave }: { value: WardrobeItem | null; 
     setTried(true);
     if (!d || d.seasons.length === 0) return;
     const name = d.name.trim() || `${typeLabel(d.type)} ${colorName(d.color).toLowerCase()}`;
-    onSave({ ...d, name, brand: d.brand.trim(), url: d.url?.trim() || undefined, imageUrl: d.imageUrl?.trim() || undefined, example: undefined });
+    onSave({ ...(({ lookMsg: _m, ...rest }) => rest)(d as WardrobeItem & { lookMsg?: string }), name, brand: d.brand.trim(), url: d.url?.trim() || undefined, imageUrl: d.imageUrl?.trim() || undefined, example: undefined });
   };
   return (
     <Sheet open={!!value} onClose={onClose} title={value && wasSaved ? 'Editar prenda' : 'Añadir prenda'} wide
@@ -137,14 +161,26 @@ function WardrobeForm({ value, onClose, onSave }: { value: WardrobeItem | null; 
             }} />
             <Button size="sm" variant="outline" onClick={() => file.current?.click()}><Camera size={14} />{d.photo ? 'Cambiar foto' : 'Subir foto'}</Button>
             {d.photo && <Button size="sm" variant="ghost" onClick={() => set({ photo: undefined })}>Quitar foto</Button>}
+            {d.url && !d.photo && (
+              <Button size="sm" variant="outline" disabled={looking} onClick={async () => {
+                setLooking(true); setLookMsg(null);
+                const r = await fetchPreview(d.url!.trim());
+                setLooking(false);
+                if (!r.ok) { setLookMsg(PREVIEW_ERROR_TEXT[r.error]); return; }
+                if (!r.preview.image) { setLookMsg('La tienda no trae foto en su página. Súbela tú.'); return; }
+                setD((cur) => (cur ? { ...cur, imageUrl: r.preview.image } : cur)); setLookMsg('Foto encontrada en la tienda.');
+              }}>{looking ? <Loader2 size={14} className="animate-spin" /> : <ImageDown size={14} />}{looking ? 'Buscando…' : d.imageUrl ? 'Volver a buscar la foto' : 'Buscar foto en la tienda'}</Button>
+            )}
+            {d.imageUrl && !d.photo && <Button size="sm" variant="ghost" onClick={() => set({ imageUrl: undefined })}>Quitar foto de la tienda</Button>}
+            {lookMsg && <p className="text-2xs leading-relaxed text-muted">{lookMsg}</p>}
             {photoErr && <p className="text-2xs text-bad">{photoErr}</p>}
-            <p className="text-2xs leading-relaxed text-muted">{d.photo ? 'La foto se guarda solo en este dispositivo.' : 'Sin foto se muestra un dibujo según el tipo y el color.'}</p>
+            <p className="text-2xs leading-relaxed text-muted">{d.photo ? 'La foto se guarda solo en este dispositivo.' : d.imageUrl ? 'La foto se carga desde la web de la tienda.' : 'Sin foto se muestra un dibujo según el tipo y el color.'}</p>
           </div>
           <div className="flex flex-col gap-4">
             {d.url && !wasSaved && (
               <Notice>{d.catalogId
                 ? <>Esta prenda ya está en el catálogo de Percha: hemos copiado su nombre, tipo y color de la ficha{d.imageUrl ? ', y su foto' : ' (de esta no tenemos foto)'}.</>
-                : <>Percha no puede abrir la página de la tienda, así que la marca y el nombre salen del propio enlace. <strong>Repasa el tipo y el color</strong> antes de guardar.</>}</Notice>
+                : <>Hemos leído la ficha de la tienda{d.imageUrl ? ' y su foto' : ''}. <strong>Repasa el tipo y el color</strong> antes de guardar: se deducen del nombre.</>}</Notice>
             )}
             <Field id="w-type" label="Tipo de prenda">
               <select id="w-type" className={inputCls} value={d.type} onChange={(e) => set({ type: e.target.value as GarmentType })}>
@@ -176,26 +212,42 @@ function WardrobeForm({ value, onClose, onSave }: { value: WardrobeItem | null; 
   );
 }
 
-function LinkSheet({ open, onClose, onOne, onMany }: { open: boolean; onClose: () => void; onOne: (w: WardrobeItem) => void; onMany: (w: WardrobeItem[]) => void }) {
+function LinkSheet({ open, onClose, onOne, onMany, existing }: { open: boolean; onClose: () => void; onOne: (w: WardrobeItem & { lookMsg?: string }) => void; onMany: (w: WardrobeItem[], skipped: number) => void; existing: (url: string) => WardrobeItem | undefined }) {
   const [text, setText] = useState('');
   const [err, setErr] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
   const found = splitLinks(text);
-  const read = () => {
+  const read = async () => {
     const items = found.map(readStoreLink).flatMap((r) => (r.ok && r.item ? [r.item] : []));
     if (items.length === 0) { setErr('Pega al menos un enlace de una tienda, por ejemplo https://scuffers.com/products/…'); return; }
-    setText(''); setErr(null);
-    if (items.length === 1) onOne(items[0]);
-    else onMany(items.map((w) => ({ ...w, name: w.name || `${typeLabel(w.type)} ${colorName(w.color).toLowerCase()}` })));
+    setErr(null);
+    if (items.length === 1) {
+      const had = items[0].url ? existing(items[0].url) : undefined;
+      if (had) { setText(''); onOne({ ...had, lookMsg: 'Esta prenda ya estaba en tu armario: aquí la puedes editar.' }); return; }
+      let item: WardrobeItem & { lookMsg?: string } = items[0];
+      if (!item.imageUrl && item.url) {
+        setBusy(true);
+        const r = await fetchPreview(item.url);
+        setBusy(false);
+        item = r.ok ? refineWithPreview(item, r.preview) : { ...item, lookMsg: PREVIEW_ERROR_TEXT[r.error] };
+      }
+      setText('');
+      onOne(item);
+      return;
+    }
+    setText('');
+    const fresh = items.filter((w) => !(w.url && existing(w.url)));
+    onMany(fresh.map((w) => ({ ...w, name: w.name || `${typeLabel(w.type)} ${colorName(w.color).toLowerCase()}` })), items.length - fresh.length);
   };
   return (
     <Sheet open={open} onClose={onClose} title="Añadir desde enlace"
-      footer={<><Button variant="ghost" onClick={onClose}>Cancelar</Button><Button onClick={read}>{found.length > 1 ? `Añadir ${found.length} prendas` : 'Leer enlace'}</Button></>}>
+      footer={<><Button variant="ghost" onClick={onClose}>Cancelar</Button><Button disabled={busy} onClick={() => void read()}>{busy ? <><Loader2 size={15} className="animate-spin" />Leyendo la tienda…</> : found.length > 1 ? `Añadir ${found.length} prendas` : 'Leer enlace'}</Button></>}>
       <div className="flex flex-col gap-4">
         <Field id="w-links" label="Enlaces de las prendas que usas" hint="Uno por línea. Con uno solo puedes repasar los datos antes de guardar; con varios se añaden de golpe y los editas después.">
           <textarea id="w-links" rows={5} className={cx(inputCls, 'h-auto py-2.5 leading-relaxed')} value={text} onChange={(e) => { setText(e.target.value); setErr(null); }} placeholder={'https://scuffers.com/products/original-black-hoodie\nhttps://www.levi.com/…'} />
         </Field>
         {err && <p className="text-[13px] text-bad">{err}</p>}
-        <p className="text-[13px] leading-relaxed text-muted">Percha guarda el enlace y saca la tienda y el nombre de la propia dirección. No puede abrir la página, así que la foto y el precio no se leen solos: la foto la puedes subir o pegar su dirección al editar la prenda.</p>
+        <p className="text-[13px] leading-relaxed text-muted">Percha lee la ficha de la tienda para traer la foto y el nombre. Para eso envía el enlace (solo el enlace, nada tuyo) a Microlink, un servicio que lee páginas web; permite unas 25 consultas al día. Algunas tiendas no se dejan leer: entonces la foto la subes tú.</p>
       </div>
     </Sheet>
   );
