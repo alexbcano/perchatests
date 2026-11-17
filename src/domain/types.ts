@@ -74,6 +74,8 @@ export interface Product {
   colorNames?: string[];
   /** Catálogo real: la tabla de tallas de la marca no aplica a este producto */
   noChart?: boolean;
+  /** Medidas de la prenda en plano publicadas por la tienda (no del cuerpo). */
+  garment?: { chestFlat: Record<string, number>; length?: Record<string, number>; sourceUrl: string };
 }
 
 export interface Measurements {
@@ -89,6 +91,8 @@ export interface Measurements {
   neck: number | null;
   footLength: number | null;
   shoeEU: number | null;
+  /** Ancho en plano (axila a axila) de una sudadera o camiseta tuya que te queda como te gusta. */
+  refChestFlat?: number | null;
 }
 
 export interface Profile {

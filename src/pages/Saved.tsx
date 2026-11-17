@@ -12,6 +12,7 @@ import { CONFIDENCE_LABEL, recommendSize } from '@/features/sizing/recommend';
 import { LookImage, ProductThumb } from '@/ui/figure';
 import { AVAIL, OutfitCard, ProductCard } from '@/ui/cards';
 import { Button, ColorDot, Confirm, DemoTag, Empty, inputCls, PageHeader, Pill, Segmented, Sheet } from '@/ui/primitives';
+import { RefWidth } from '@/ui/RefWidth';
 import { CollectionSheet } from './OutfitDetail';
 
 type Tab = 'looks' | 'prendas' | 'colecciones' | 'busquedas';
@@ -173,6 +174,7 @@ function ProductSheet({ product, onClose, onCollect }: { product: Product | null
             <div className="rounded-sm bg-tile p-3">
               <p className="flex flex-wrap items-center gap-2 font-medium">{rec.headline}{rec.status === 'ok' && <Pill tone={rec.confidence === 'alta' ? 'ok' : rec.confidence === 'media' ? 'warn' : 'bad'}>{CONFIDENCE_LABEL[rec.confidence]}</Pill>}</p>
               <p className="mt-1 text-[13px] leading-relaxed">{rec.detail}</p>
+              {product?.garment && <RefWidth id={`ref-saved-${product.id}`} />}
             </div>
           )}
         </div>

@@ -1,7 +1,7 @@
 // DATOS DE DEMOSTRACIÓN — Marcas y tablas de tallas ficticias.
 // Sirven para probar el recomendador con patrones distintos por marca.
 // En la Fase 2 se sustituyen por las tablas reales de cada marca/producto.
-import type { Brand } from '@/domain/types';
+import type { Brand, GarmentType } from '@/domain/types';
 
 export const BRANDS: Brand[] = [
   { id: 'basico', name: 'Básico Común', demo: true, blurb: 'Básicos diarios a precio contenido.', sizingNote: 'Tallaje estándar.', store: 'Escaparate Demo', markets: ['ES', 'UE'] },
@@ -23,7 +23,7 @@ export const brandById = (id: string) => BRANDS.find((b) => b.id === id) ?? EXTR
 export type ChartGroup = 'tops' | 'tailoring' | 'bottoms' | 'shoes' | 'belts';
 export type Range = [number, number];
 export interface SizeRow { size: string; chest?: Range; shoulders?: Range; waist?: Range; hip?: Range; foot?: Range; inseam?: number }
-export interface SizeChart { brandId: string; group: ChartGroup; title: string; rows: SizeRow[]; lengths?: { label: string; inseam: number }[]; note: string; demo?: boolean; derived?: boolean; sourceUrl?: string }
+export interface SizeChart { brandId: string; group: ChartGroup; title: string; rows: SizeRow[]; lengths?: { label: string; inseam: number }[]; note: string; demo?: boolean; derived?: boolean; sourceUrl?: string; forTypes?: GarmentType[] }
 
 const r1 = (n: number) => Math.round(n * 10) / 10;
 
@@ -77,8 +77,10 @@ export const SIZE_CHARTS: SizeChart[] = [
   { brandId: 'kalle', group: 'belts', title: 'Kalle Nueve · cinturones', rows: [{ size: 'Única', waist: [68, 110] }], note: 'Hebilla deslizante: talla única ajustable.' },
 ];
 
-export function chartFor(brandId: string, group: ChartGroup): SizeChart | undefined {
-  const all = [...SIZE_CHARTS, ...EXTRA_CHARTS];
-  return all.find((c) => c.brandId === brandId && c.group === group)
+export function chartFor(brandId: string, group: ChartGroup, type?: GarmentType): SizeChart | undefined {
+  const all = [...SIZE_CHARTS, ...EXTRA_CHARTS].filter((c) => c.brandId === brandId);
+  // Si la marca tiene una tabla específica para este tipo de prenda (p. ej. vaqueros en pulgadas), manda esa.
+  const specific = type ? all.find((c) => c.group === group && c.forTypes?.includes(type)) : undefined;
+  return specific ?? all.find((c) => c.group === group && !c.forTypes)
     ?? (group === 'tailoring' ? all.find((c) => c.brandId === brandId && c.group === 'tops') : undefined);
 }

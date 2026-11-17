@@ -171,7 +171,7 @@ export function LookImage({ items, backdrop, className, wide, label }: { items: 
 export function outfitResolvedLabel(outfit: Outfit) { return `Ilustración conceptual de ${outfit.name}`; }
 
 // ───────────── Guía de medidas ─────────────
-export type MeasureKey = keyof Measurements;
+export type MeasureKey = Exclude<keyof Measurements, 'refChestFlat'>;
 
 export const MEASURE_FIELDS: { key: MeasureKey; n: number; label: string; help: string; optional?: boolean; min: number; max: number }[] = [
   { key: 'height', n: 1, label: 'Altura', help: 'De pie, sin zapatos, de la coronilla al suelo.', min: 120, max: 230 },

@@ -18,6 +18,7 @@ import { FigureSvg, LookImage, OutfitCover, ProductThumb, useLookHasPhotos, type
 import { dimsFromMeasures } from '@/ui/figure/geometry';
 import { AVAIL, ConceptTag, OutfitCard } from '@/ui/cards';
 import { Button, ColorDot, cx, DemoTag, IconButton, Meter, Notice, Pill, Segmented, Sheet } from '@/ui/primitives';
+import { RefWidth } from '@/ui/RefWidth';
 
 type Tab = 'prendas' | 'probador' | 'consejos';
 
@@ -202,7 +203,8 @@ function PieceRow({ outfit, item, open, onToggle, onSwap, canRemove }: { outfit:
                 {rec.status !== 'onesize' && <Pill>Corte {FIT_LABEL[rec.fit].toLowerCase()}</Pill>}
               </div>
               <p className="mt-2 text-[13px] leading-relaxed">{rec.detail}</p>
-              {rec.measures.length > 0 && rec.status === 'ok' && (
+              {product.garment && <RefWidth id={`ref-${piece.ref}`} />}
+              {rec.measures.length > 0 && rec.status === 'ok' && !product.garment && (
                 <table className="tabular mt-3 w-full text-left text-xs">
                   <thead><tr className="text-muted"><th className="py-1 font-normal">Medida</th><th className="py-1 font-normal">Tú</th><th className="py-1 font-normal">Rango de la talla</th><th className="py-1 font-normal" /></tr></thead>
                   <tbody>
@@ -224,10 +226,10 @@ function PieceRow({ outfit, item, open, onToggle, onSwap, canRemove }: { outfit:
               {rec.brandNote && rec.status === 'ok' && <p className="mt-2 text-xs text-muted">Sobre la marca: {rec.brandNote}</p>}
               {rec.chart && (
                 <div className="mt-3">
-                  <button type="button" onClick={() => setTable((v) => !v)} aria-expanded={table} className="inline-flex items-center gap-1 text-xs font-medium underline decoration-line underline-offset-4">Tabla de tallas de la marca<ChevronDown size={13} className={cx('transition-transform', table && 'rotate-180')} /></button>
+                  <button type="button" onClick={() => setTable((v) => !v)} aria-expanded={table} className="inline-flex items-center gap-1 text-xs font-medium underline decoration-line underline-offset-4">{product.garment && rec.chart.title.startsWith('Medidas de la prenda') ? 'Medidas de la prenda' : 'Tabla de tallas de la marca'}<ChevronDown size={13} className={cx('transition-transform', table && 'rotate-180')} /></button>
                   {table && (
                     <div className="anim-fade mt-2 overflow-x-auto">
-                      <p className="mb-1.5 flex flex-wrap items-center gap-2 text-2xs text-muted">{rec.chart.title} {product.demo ? <DemoTag label="Tabla de ejemplo" /> : rec.chart.sourceUrl && <a href={rec.chart.sourceUrl} target="_blank" rel="noreferrer" className="underline underline-offset-2">Fuente: guía oficial</a>}</p>
+                      <p className="mb-1.5 flex flex-wrap items-center gap-2 text-2xs text-muted">{rec.chart.title} {product.demo ? <DemoTag label="Tabla de ejemplo" /> : rec.chart.sourceUrl && <a href={rec.chart.sourceUrl} target="_blank" rel="noreferrer" className="underline underline-offset-2">{product.garment && !chartOfficialBody(rec) ? 'Fuente: ficha de la tienda' : 'Fuente: guía oficial'}</a>}</p>
                       {rec.chart.note && <p className="mb-1.5 text-2xs text-muted">{rec.chart.note}</p>}
                       <table className="tabular w-full min-w-[320px] text-left text-xs">
                         <thead><tr className="text-muted"><th className="py-1 pr-3 font-normal">Talla</th>{rec.chart.columns.map((c) => <th key={c} className="py-1 pr-3 font-normal">{c}</th>)}</tr></thead>
@@ -606,3 +608,5 @@ export function CollectionSheet({ open, onClose, outfit, productId }: { open: bo
 }
 
 export type { Piece };
+
+const chartOfficialBody = (rec: { chart: { title: string } | null }) => !!rec.chart && !rec.chart.title.startsWith('Medidas de la prenda');

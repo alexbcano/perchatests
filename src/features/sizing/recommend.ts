@@ -55,19 +55,20 @@ export function recommendSize(product: Product, m: Measurements, fitPref: Profil
   const base: SizeRec = { status: 'ok', confidence: 'alta', headline: '', detail: '', margins: [], measures: [], chart: null, fit: product.fit, missing: [], brandNote };
 
   const group = chartGroupFor(product);
-  const found = group ? chartFor(product.brandId, group) : undefined;
+  const found = group ? chartFor(product.brandId, group, product.type) : undefined;
   const known = product.sizes.map((s) => s.label);
   const applies = !!found && !product.noChart && (known.length === 0 || found.rows.some((r) => known.includes(r.size)));
   if (!group || (!found && product.demo)) {
     return { ...base, status: 'onesize', headline: 'Talla única', detail: 'Este accesorio no tiene tallas.' };
   }
+  if ((!found || !applies) && product.garment) return byGarment(product, m, base, brand?.name ?? 'La marca');
   if (!found || !applies) {
     // Marca real sin tabla leída: no se inventa una equivalencia.
     const usual = group === 'shoes' && m.shoeEU ? ` Tu talla habitual de calzado es la ${Math.round(m.shoeEU)}: úsala como punto de partida y confírmala en la guía de la marca.` : '';
     return {
       ...base, status: 'nochart', confidence: 'baja',
       headline: `Sin tabla de tallas de ${brand?.name ?? 'esta marca'}`,
-      detail: `No hemos podido leer la tabla oficial de ${brand?.name ?? 'esta marca'} para esta prenda, así que no recomendamos talla: sería adivinar. Abre la ficha y consulta su guía de tallas.${usual}`,
+      detail: `No tenemos una tabla oficial de medidas del cuerpo de ${brand?.name ?? 'esta marca'} para esta prenda, así que no recomendamos talla: sería adivinar. Abre la ficha y consulta su guía de tallas.${usual}`,
     };
   }
   const chart = found;
@@ -254,3 +255,49 @@ export function recommendSize(product: Product, m: Measurements, fitPref: Profil
 }
 
 export const CONFIDENCE_LABEL: Record<Confidence, string> = { alta: 'Confianza alta', media: 'Confianza media', baja: 'Confianza baja' };
+
+/**
+ * La tienda solo publica medidas de la prenda en plano. Sin una prenda tuya de referencia no hay forma honesta
+ * de recomendar (habría que inventar cuánta holgura quieres). Con ella, se elige la talla cuyo ancho se parece más.
+ */
+function byGarment(product: Product, m: Measurements, base: SizeRec, brandName: string): SizeRec {
+  const g = product.garment!;
+  const sizes = Object.keys(g.chestFlat);
+  const ref = m.refChestFlat ?? null;
+  let pick: string | undefined;
+  if (ref) pick = sizes.reduce((a, b) => (Math.abs(g.chestFlat[b] - ref) < Math.abs(g.chestFlat[a] - ref) ? b : a), sizes[0]);
+  const chart: SizeRec['chart'] = {
+    title: `Medidas de la prenda en plano (${brandName})`,
+    note: 'Son medidas de la sudadera estirada sobre una mesa, no de tu cuerpo. El ancho va de axila a axila.',
+    sourceUrl: g.sourceUrl,
+    columns: g.length ? ['Ancho', 'Largo'] : ['Ancho'],
+    rows: sizes.map((s) => ({
+      size: s, recommended: s === pick,
+      inStock: product.sizes.length === 0 ? true : product.sizes.find((x) => x.label === s)?.inStock ?? false,
+      cells: [`${fmt(g.chestFlat[s])} cm`, ...(g.length ? [g.length[s] != null ? `${fmt(g.length[s])} cm` : '—'] : [])],
+    })),
+  };
+  if (!ref || !pick) {
+    return {
+      ...base, status: 'nochart', confidence: 'baja', chart,
+      headline: 'Compárala con una sudadera tuya',
+      detail: `${brandName} solo publica las medidas de la prenda, no las del cuerpo. Coge una sudadera o camiseta que te quede como te gusta, extiéndela y mide de axila a axila. Con ese ancho elegimos la talla que más se parece.`,
+    };
+  }
+  const diff = g.chestFlat[pick] - ref;
+  const i = sizes.indexOf(pick);
+  const other = diff < 0 ? sizes[i + 1] : sizes[i - 1];
+  const otherDiff = other ? g.chestFlat[other] - ref : null;
+  const close = Math.abs(diff) <= 1.5;
+  const tie = otherDiff != null && Math.abs(otherDiff) === Math.abs(diff) && diff !== 0;
+  const rec: SizeRec = {
+    ...base, chart, size: pick, confidence: close ? 'media' : 'baja',
+    headline: tie ? `Talla ${[pick, other].sort((a, b) => sizes.indexOf(a!) - sizes.indexOf(b!)).join(' o ')}` : `Talla ${pick}`,
+    detail: `Tu prenda de referencia mide ${fmt(ref)} cm de ancho; la ${pick} de esta mide ${fmt(g.chestFlat[pick])} cm (${diff === 0 ? 'igual' : `${diff > 0 ? '+' : ''}${fmt(diff)} cm`}). ${tie ? ` La ${other} está igual de cerca (${otherDiff! > 0 ? '+' : ''}${fmt(otherDiff!)} cm): elige según si la quieres más justa o más holgada.` : ' Es la que más se parece a como te gusta que te quede.'}${close ? '' : ' Ninguna talla se parece mucho: mira también el largo en la tabla.'}`,
+    measures: [{ label: 'Ancho de tu prenda', user: ref, range: `${fmt(g.chestFlat[pick])} en la ${pick}`, inRange: null }],
+  };
+  if (!tie && other && otherDiff != null && Math.abs(otherDiff) <= 2.5) rec.alt = { size: other, why: `Mide ${fmt(g.chestFlat[other])} cm (${otherDiff > 0 ? '+' : ''}${fmt(otherDiff)} cm): ${otherDiff > 0 ? 'si la quieres más holgada' : 'si la quieres algo más justa'}.` };
+  const stock = product.sizes.find((s) => s.label === pick);
+  if (stock && !stock.inStock) rec.stockWarning = `La talla ${pick} no se podía comprar cuando consultamos la ficha.`;
+  return rec;
+}

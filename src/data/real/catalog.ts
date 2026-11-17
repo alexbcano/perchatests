@@ -21,12 +21,14 @@ const MSIMG = (file: string) => `https://milfshakes.es/cdn/shop/files/${file}`;
 const MSZ = ['S', 'M', 'L', 'XL', 'XXL'];
 const SC = (slug: string) => `https://scuffers.com/products/${slug}`;
 const SCZ = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+// Medidas de la prenda en plano que publica Scuffers (iguales en estos tres modelos, leídas en cada ficha).
+const SC_FLAT = (slug: string) => ({ chestFlat: { XS: 61, S: 63, M: 65, L: 67, XL: 70, XXL: 73 }, length: { XS: 58, S: 61, M: 64, L: 67, XL: 70, XXL: 73 }, sourceUrl: `https://scuffers.com/products/${slug}` });
 const ALPHA = ['XS', 'S', 'M', 'L', 'XL'];
 const ALPHA7 = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'];
 const EU_T = ['44', '46', '48', '50', '52', '54'];
 const SHOE = ['40', '41', '42', '43', '44', '45'];
 
-interface Extra { img?: string; sizes?: string[]; out?: string[]; names?: string[]; traits?: Product['traits']; noChart?: boolean }
+interface Extra { img?: string; sizes?: string[]; out?: string[]; names?: string[]; traits?: Product['traits']; noChart?: boolean; garment?: Product['garment'] }
 
 function r(
   id: string, name: string, brandId: string, type: GarmentType, color: ColorKey, alts: ColorKey[], price: number,
@@ -41,7 +43,7 @@ function r(
     formality: lvl[0], boldness: lvl[1], warmth: lvl[2],
     sizes: (x.sizes ?? []).map((label) => ({ label, inStock: !(x.out ?? []).includes(label) })),
     availability: 'consultar', markets: brand.markets, traits: x.traits, url,
-    imageUrl: x.img, seenAt: REAL_SEEN_AT, colorNames: x.names, noChart: x.noChart,
+    imageUrl: x.img, seenAt: REAL_SEEN_AT, colorNames: x.names, noChart: x.noChart, garment: x.garment,
   };
 }
 
@@ -130,7 +132,7 @@ export const REAL_CATALOG: Product[] = [
   r('n02', '574', 'newbalance', 'runner', 'crudo', [], 120, 'regular', 'sporty vintage casual street minimal', 'PVOI', [1, 2, 2], 'https://www.newbalance.es/es/pd/574/U574V2_LI-FTW-825977.html', { img: 'https://nb.scene7.com/is/image/NB/u5746sg_nb_02_i?$pdpflexf2$&wid=440&hei=440', names: ['Sea Salt with Linen'] }),
   r('n03', 'NB Numeric 574 Vulc', 'newbalance', 'skate', 'negro', [], 100, 'regular', 'skater street casual', 'PVOI', [1, 2, 2], 'https://www.newbalance.es/es/pd/nb-numeric-574-vulc/UN574V1_SK-FTW-803144.html', { names: ['Black with Sea Salt'] }),
   r('v01', "Jean 501 Levi's Original", 'levis', 'jeans', 'denim', [], 110, 'regular', 'casual vintage street skater smart', 'PVOI', [2, 1, 2], 'https://www.levi.com/ES/es_ES/ropa/hombre/vaqueros/jean-501-levis-original/p/005012744', { names: ['Azul'] }),
-  r('w01', 'Double Knee Pant', 'carhartt', 'straight', 'negro', [], 129, 'relaxed', 'street skater vintage casual', 'PVOI', [1, 3, 2], 'https://www.carhartt-wip.com/es-es/p/double-knee-pant-black-rinsed-1313', { sizes: ['26', '27', '28', '29', '30', '31', '32', '33', '34', '36', '38', '40'], names: ['Black, rinsed'], noChart: true }),
+  r('w01', 'Double Knee Pant', 'carhartt', 'straight', 'negro', [], 129, 'relaxed', 'street skater vintage casual', 'PVOI', [1, 3, 2], 'https://www.carhartt-wip.com/es-es/p/double-knee-pant-black-rinsed-1313', { sizes: ['26', '27', '28', '29', '30', '31', '32', '33', '34', '36', '38', '40'], names: ['Black, rinsed'] }),
   r('d01', 'Americana traje 100% lana', 'dutti', 'blazer', 'marino', [], 199, 'regular', 'formal business smart oldmoney quiet', 'POI', [5, 1, 3], 'https://www.massimodutti.com/es/americana-traje-100-lana-l03671558', { img: 'https://static.massimodutti.net/assets/public/ea8b/3007/edaa44389e41/8dcba3c8e905/03671558401-t/03671558401-t.jpg?ts=1777473026212', names: ['Azul marino'] }),
   // ── Añadidos el 16 nov 2026 (segunda tanda) ──────────────────────
   r('c12', 'Camiseta algodón regular fit', 'cos', 'tee', 'blanco', [], 25, 'regular', 'casual minimal street smart skater sporty', 'PVOI', [2, 1, 1], COS + 'menswear/tshirts/regular-fit/product/regular-fit-cotton-t-shirt-white-1334757002', { img: COSIMG('f6/fa/f6fafe72c24599aec647754678b0ce8a1d0bb59c'), sizes: ALPHA, names: ['Blanco'] }),
@@ -179,9 +181,9 @@ export const REAL_CATALOG: Product[] = [
   r('m15', 'MS Black Crewneck', 'milfshakes', 'sweatshirt', 'negro', [], 54.69, 'relaxed', 'street skater casual', 'POI', [1, 3, 4], MS('220-crewneck-black'), { sizes: MSZ, noChart: true }),
   r('m16', 'Cloudy Cream Hoodie (cremallera)', 'milfshakes', 'hoodie', 'crudo', [], 79.69, 'oversized', 'street skater y2k casual', 'POI', [1, 4, 4], MS('milf-clecru'), { sizes: MSZ, noChart: true }),
   // ── Scuffers (16 nov 2026). Su web no deja leer las fotos: se ven con ilustración. ──
-  r('s01', 'Original Black Hoodie', 'scuffers', 'hoodie', 'negro', [], 79, 'oversized', 'street skater casual minimal', 'POI', [1, 3, 4], SC('original-black-hoodie'), { sizes: SCZ, noChart: true }),
-  r('s02', 'Raw Dark Hoodie', 'scuffers', 'hoodie', 'carbon', [], 79, 'oversized', 'street skater casual vintage', 'POI', [1, 3, 4], SC('raw-dark-hoodie'), { sizes: SCZ, noChart: true, names: ['Negro desteñido'] }),
-  r('s03', 'Sign Dark Hoodie', 'scuffers', 'hoodie', 'negro', [], 79, 'oversized', 'street skater y2k casual', 'POI', [1, 4, 4], SC('sign-black-hoodie'), { sizes: SCZ, noChart: true, traits: { pattern: 'graphic', second: 'blanco' } }),
+  r('s01', 'Original Black Hoodie', 'scuffers', 'hoodie', 'negro', [], 79, 'oversized', 'street skater casual minimal', 'POI', [1, 3, 4], SC('original-black-hoodie'), { sizes: SCZ, noChart: true , garment: SC_FLAT('original-black-hoodie') }),
+  r('s02', 'Raw Dark Hoodie', 'scuffers', 'hoodie', 'carbon', [], 79, 'oversized', 'street skater casual vintage', 'POI', [1, 3, 4], SC('raw-dark-hoodie'), { sizes: SCZ, noChart: true, names: ['Negro desteñido'] , garment: SC_FLAT('raw-dark-hoodie') }),
+  r('s03', 'Sign Dark Hoodie', 'scuffers', 'hoodie', 'negro', [], 79, 'oversized', 'street skater y2k casual', 'POI', [1, 4, 4], SC('sign-black-hoodie'), { sizes: SCZ, noChart: true, traits: { pattern: 'graphic', second: 'blanco' } , garment: SC_FLAT('sign-black-hoodie') }),
   r('s04', 'Lizzie Black Hoodie', 'scuffers', 'hoodie', 'negro', [], 79, 'oversized', 'street skater vintage y2k', 'POI', [1, 4, 4], SC('lizzie-black-hoodie'), { noChart: true, names: ['Negro lavado con capucha gris'] }),
   r('s05', 'Rawest Dark Navy Hoodie', 'scuffers', 'hoodie', 'negro', [], 82, 'oversized', 'street skater casual minimal', 'OI', [1, 3, 5], SC('rawest-black-hoodie'), { noChart: true }),
 ];
