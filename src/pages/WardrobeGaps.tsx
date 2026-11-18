@@ -69,7 +69,7 @@ export function WardrobeGaps() {
                     )}
                     <div className="mt-auto flex flex-wrap gap-2 pt-3">
                       <Button size="sm" onClick={() => useApp.getState().openOutfit(exampleOutfit(pk, prefs, { profile, wardrobe, referents: [] }))}><Shirt size={14} />Ver un look</Button>
-                      {pk.product.url && <a href={pk.product.url} target="_blank" rel="noreferrer" className="inline-flex h-8 items-center gap-1.5 rounded-sm border border-line px-2.5 text-xs font-medium"><ExternalLink size={13} />{brand?.store ?? 'Tienda'}</a>}
+                      {pk.product.url && <a href={pk.product.url} target="_blank" rel="noreferrer" className="inline-flex h-8 items-center gap-1.5 rounded-full border-[1.5px] border-ink px-2.5 text-xs font-medium"><ExternalLink size={13} />{brand?.store ?? 'Tienda'}</a>}
                     </div>
                   </li>
                 );

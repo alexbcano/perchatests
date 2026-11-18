@@ -22,15 +22,18 @@ export default {
         'bad-soft': 'color-mix(in srgb, var(--bad-soft) calc(<alpha-value> * 100%), transparent)',
       },
       fontFamily: {
-        display: ['"Bodoni Moda"', 'Didot', '"Bodoni MT"', 'Georgia', 'serif'],
-        sans: ['"Instrument Sans"', '"Helvetica Neue"', 'Arial', 'sans-serif'],
+        display: ['Archivo', '"Helvetica Neue"', 'Arial', 'sans-serif'],
+        sans: ['Archivo', '"Helvetica Neue"', 'Arial', 'sans-serif'],
+      },
+      borderRadius: {
+        sm: '0px',
       },
       fontSize: {
         '2xs': ['0.6875rem', '1rem'],
       },
       boxShadow: {
-        sheet: '0 -12px 40px rgb(20 24 43 / 0.18)',
-        lift: '0 10px 30px -12px rgb(20 24 43 / 0.28)',
+        sheet: '0 -12px 40px rgb(0 0 0 / 0.16)',
+        lift: '0 10px 30px -12px rgb(0 0 0 / 0.28)',
       },
     },
   },

@@ -55,6 +55,7 @@ export function OutfitDetail() {
           <div className="relative mx-auto aspect-[3/4] w-full max-w-md overflow-hidden rounded-sm lg:max-w-none">
             <LookImage items={items} backdrop={outfit.backdrop} className="anim-cover h-full w-full" label={`Imagen de ${outfit.name}`} />
             <ConceptTag photos={hasPhotos} className="absolute bottom-3 left-3" />
+            {outfit.total > 0 && <span className="sticker tabular absolute bottom-4 right-4 text-lg">{euro(outfit.total)}</span>}
           </div>
         </div>
 
@@ -254,7 +255,7 @@ function PieceRow({ outfit, item, open, onToggle, onSwap, canRemove }: { outfit:
             {!piece.own && (product.url
               ? <a href={product.url} target="_blank" rel="noreferrer" className="inline-flex h-9 items-center gap-2 rounded-sm bg-accent px-3 text-[13px] font-medium text-accent-ink"><ExternalLink size={14} />Ver en {brand?.store}</a>
               : <Button size="sm" onClick={() => setStore(true)}><ExternalLink size={14} />Ver en tienda</Button>)}
-            {piece.own && product.url && <a href={product.url} target="_blank" rel="noreferrer" className="inline-flex h-9 items-center gap-2 rounded-sm border border-line px-3 text-[13px] font-medium"><ExternalLink size={14} />Ver donde la compré</a>}
+            {piece.own && product.url && <a href={product.url} target="_blank" rel="noreferrer" className="inline-flex h-9 items-center gap-2 rounded-full border-[1.5px] border-ink px-3 text-[13px] font-medium"><ExternalLink size={14} />Ver donde la compré</a>}
             {!piece.own && <Button size="sm" variant="outline" onClick={() => useApp.getState().toggleSaveProduct(product.id)}><Heart size={14} fill={savedProduct ? 'currentColor' : 'none'} />{savedProduct ? 'Prenda guardada' : 'Guardar prenda'}</Button>}
             <Button size="sm" variant="outline" onClick={onSwap}><Repeat2 size={14} />Cambiar prenda</Button>
             {canRemove && product.category !== 'top' && product.category !== 'bottom' && <Button size="sm" variant="ghost" onClick={() => useApp.getState().updateOpen(removePiece(outfit, piece.ref, ctx()))}><Trash2 size={14} />Quitar</Button>}

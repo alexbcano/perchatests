@@ -6,6 +6,9 @@ import { resolveOutfit } from '@/services/catalog';
 import { LookImage, useLookHasPhotos } from '@/ui/figure';
 import { ConceptTag, OutfitCard } from '@/ui/cards';
 import { Button } from '@/ui/primitives';
+import { brandById } from '@/data/demo/brands';
+
+const joinEs = (xs: string[]) => (xs.length <= 1 ? xs[0] ?? '' : `${xs.slice(0, -1).join(', ')} y ${xs[xs.length - 1]}`);
 
 const daySeed = () => Math.floor(Date.now() / 86400000);
 
@@ -26,6 +29,7 @@ export function Home() {
   const rest = recs.filter((o) => o !== hero);
   const heroItems = hero ? resolveOutfit(hero.pieces, wardrobe) : [];
   const heroPhotos = useLookHasPhotos(heroItems);
+  const brands = [...new Set(heroItems.filter((i) => !i.piece.own).map((i) => brandById(i.product.brandId)?.name).filter(Boolean) as string[])];
   const today = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
 
   return (
@@ -40,9 +44,10 @@ export function Home() {
             <LookImage items={heroItems} backdrop={hero.backdrop} className="anim-cover aspect-[4/5] w-full transition-transform duration-700 group-hover:scale-[1.02] sm:hidden" />
             <LookImage items={heroItems} backdrop={hero.backdrop} wide className="anim-cover hidden aspect-[16/10] w-full transition-transform duration-700 group-hover:scale-[1.02] sm:block" />
             <ConceptTag photos={heroPhotos} className="absolute bottom-3 left-3" />
+            {hero.total > 0 && <span className="sticker tabular absolute bottom-4 right-4 text-lg">{euro(hero.total)}</span>}
           </button>
           <div className="lg:col-span-5 lg:pb-2">
-            <p className="tabular text-sm text-muted">{heroItems.length} prendas · <span className="font-medium text-ink">{euro(hero.total)}</span></p>
+            <p className="text-sm text-muted">{heroItems.length} prendas{brands.length ? ` de ${joinEs(brands)}` : ''}</p>
             <div className="mt-4 flex flex-wrap gap-2">
               <Button size="lg" onClick={() => openOutfit(hero)}>Ver el look<ArrowRight size={16} /></Button>
               {recs.length > 1 && <Button size="lg" variant="outline" onClick={() => setTurn((t) => t + 1)}><RefreshCw size={16} />Otro</Button>}

@@ -62,7 +62,7 @@ export function App() {
     <div className="flex h-full flex-col lg:flex-row">
       <aside className="hidden w-60 shrink-0 flex-col border-r border-line px-5 py-7 lg:flex">
         <button type="button" onClick={() => go('inicio')} className="text-left">
-          <span className="display block text-[2.6rem] italic leading-none">Percha</span>
+          <span className="display block text-[2.3rem] leading-none">percha</span>
           <span className="mt-1 block text-xs text-muted">Tu estilista personal</span>
         </button>
         <nav aria-label="Secciones" className="mt-10 flex flex-col gap-1">
@@ -84,7 +84,7 @@ export function App() {
       </aside>
 
       <header className="flex items-center justify-between border-b border-line px-6 py-2.5 lg:hidden">
-        <button type="button" onClick={() => go('inicio')} className="display text-[1.7rem] italic leading-none">Percha</button>
+        <button type="button" onClick={() => go('inicio')} className="display text-[1.55rem] leading-none">percha</button>
         <button type="button" onClick={() => go('favoritos')} aria-label={`Guardados${savedCount ? ` (${savedCount})` : ''}`} aria-current={route === 'favoritos' ? 'page' : undefined}
           className={cx('relative -mr-2 grid h-10 w-10 place-items-center rounded-full', route === 'favoritos' ? 'text-accent' : 'text-ink')}>
           <Heart size={21} strokeWidth={1.75} fill={route === 'favoritos' ? 'currentColor' : 'none'} />
@@ -98,11 +98,12 @@ export function App() {
         </div>
       </main>
 
-      <nav aria-label="Secciones" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
+      <nav aria-label="Secciones" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t border-line bg-paper/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
         {NAV.map(({ route: r, short, icon: Icon }) => (
           <button key={r} type="button" onClick={() => go(r)} aria-current={route === r ? 'page' : undefined}
-            className={cx('flex h-[60px] flex-col items-center justify-center gap-1 text-[11px]', route === r ? 'font-semibold text-accent' : 'text-muted')}>
-            <Icon size={20} strokeWidth={route === r ? 2.2 : 1.6} />{short}
+            className={cx('relative flex h-[60px] flex-col items-center justify-center gap-1 text-[12px]', route === r ? 'font-extrabold text-ink' : 'font-medium text-muted')}>
+            {route === r && <span aria-hidden="true" className="absolute inset-x-3 -top-px h-[3px] bg-ink" />}
+            <Icon size={21} strokeWidth={route === r ? 2.4 : 1.7} />{short}
           </button>
         ))}
       </nav>
