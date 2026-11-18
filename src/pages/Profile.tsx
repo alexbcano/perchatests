@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Camera, Check, Copy, Download, Trash2, Upload } from 'lucide-react';
+import { Camera, Check, ChevronDown, Copy, Download, Trash2, Upload } from 'lucide-react';
+import { styleName } from '@/data/demo/styles';
 import type { Measurements, Prefs } from '@/domain/types';
 import { uid, useApp } from '@/app/store';
 import { catalog, seenLabel } from '@/services/catalog';
@@ -11,9 +12,9 @@ import { fmtLen } from '@/domain/units';
 import { MEASURE_FIELDS, FigureSvg } from '@/ui/figure';
 import { dimsFromMeasures } from '@/ui/figure/geometry';
 import { BasicsForm, BoldnessField, BudgetField, GarmentPrefs, MeasuresForm, StylePicker, validateMeasures } from '@/ui/forms';
-import { Button, ColorPicker, Confirm, Notice, PageHeader, Pill, readImage, Segmented } from '@/ui/primitives';
+import { Button, ColorPicker, Confirm, cx, Notice, PageHeader, Pill, readImage, Segmented } from '@/ui/primitives';
 
-type Tab = 'medidas' | 'gustos' | 'fotos' | 'privacidad' | 'app';
+type Section = 'medidas' | 'gustos' | 'datos' | 'ajustes' | 'acerca';
 const short = (label: string) => { const t = label.replace('Contorno de ', '').replace('Longitud de ', '').replace('Ancho de ', ''); return t.charAt(0).toUpperCase() + t.slice(1); };
 
 export function Profile() {
@@ -24,7 +25,8 @@ export function Profile() {
   const mode = useApp((s) => s.prefsSlice.catalogMode);
   const photoStatus = usePhotoStatus();
   const { setProfile, setPrefs, setTheme, notify, setOnboarding, patch } = useApp.getState();
-  const [tab, setTab] = useState<Tab>('medidas');
+  const [open, setOpen] = useState<Section | null>(null);
+  const toggle = (k: Section) => setOpen((cur) => (cur === k ? null : k));
   const [draft, setDraft] = useState<Measurements>(profile.measures);
   const [tried, setTried] = useState(false);
   const [wipe, setWipe] = useState(false);
@@ -61,12 +63,18 @@ export function Profile() {
 
   return (
     <div>
-      <PageHeader title="Mi perfil" lead={profile.isExample ? 'Ahora mismo ves un perfil de ejemplo. Sustitúyelo por tus datos cuando quieras.' : `${profile.name ? profile.name + ', a' : 'A'}quí están tus medidas, tus gustos y tus datos.`}
+      <PageHeader title="Mi perfil" lead={profile.isExample ? 'Ahora ves un perfil de ejemplo.' : undefined}
         action={profile.isExample ? <Button variant="accent" onClick={() => setOnboarding(true)}>Configurar mi perfil paso a paso</Button> : undefined} />
-      <Segmented label="Sección del perfil" value={tab} onChange={setTab} options={[{ value: 'medidas', label: 'Medidas' }, { value: 'gustos', label: 'Gustos' }, { value: 'fotos', label: `Fotos (${profile.photos.length})` }, { value: 'privacidad', label: 'Privacidad y datos' }, { value: 'app', label: 'Aplicación' }]} />
 
-      {tab === 'medidas' && (
-        <div className="mt-6 flex flex-col gap-8">
+      <div className="mt-4 border-t border-line">
+        <section className="border-b border-line">
+          <button type="button" onClick={() => toggle('medidas')} aria-expanded={open === 'medidas'} className="flex w-full items-center justify-between gap-3 py-4 text-left">
+            <span className="min-w-0"><span className="block text-[15px] font-medium">Medidas</span><span className="block truncate text-xs text-muted">{filled} de {MEASURE_FIELDS.length} medidas guardadas</span></span>
+            <ChevronDown size={18} className={cx('shrink-0 text-muted transition-transform', open === 'medidas' && 'rotate-180')} />
+          </button>
+          {open === 'medidas' && (
+            <div className="anim-fade pb-8">
+        <div className="flex flex-col gap-8">
           <section className="grid gap-6 rounded-sm bg-surface p-5 sm:grid-cols-[150px_1fr]">
             <div className="mx-auto h-56 w-36 rounded-sm bg-tile sm:mx-0"><FigureSvg dims={dims} items={[]} className="h-full w-full" label="Tu avatar según tus medidas" /></div>
             <div>
@@ -93,10 +101,17 @@ export function Profile() {
             </div>
           </section>
         </div>
-      )}
-
-      {tab === 'gustos' && (
-        <div className="mt-6 flex max-w-3xl flex-col gap-7">
+            </div>
+          )}
+        </section>
+        <section className="border-b border-line">
+          <button type="button" onClick={() => toggle('gustos')} aria-expanded={open === 'gustos'} className="flex w-full items-center justify-between gap-3 py-4 text-left">
+            <span className="min-w-0"><span className="block text-[15px] font-medium">Gustos</span><span className="block truncate text-xs text-muted">{prefs.styles.map(styleName).join(', ') || 'Sin estilos elegidos'}</span></span>
+            <ChevronDown size={18} className={cx('shrink-0 text-muted transition-transform', open === 'gustos' && 'rotate-180')} />
+          </button>
+          {open === 'gustos' && (
+            <div className="anim-fade pb-8">
+        <div className="flex max-w-3xl flex-col gap-7">
           <p className="text-[13px] text-muted">Son tus preferencias por defecto: se usan en Inicio y como punto de partida en «Crear outfit». Se guardan al cambiarlas.</p>
           <div className="flex flex-col gap-2"><span className="text-[13px] font-medium">Estilos que te gustan</span><StylePicker value={prefs.styles} onChange={(styles) => setP({ styles })} /></div>
           <BudgetField id="g-budget" value={prefs.budget} onChange={(budget) => setP({ budget })} />
@@ -106,10 +121,19 @@ export function Profile() {
           <div className="flex flex-col gap-2"><span className="text-[13px] font-medium">Prendas</span><GarmentPrefs like={prefs.likeTypes} avoid={prefs.avoidTypes} onChange={(likeTypes, avoidTypes) => setP({ likeTypes, avoidTypes })} /></div>
           <div className="flex flex-col gap-2"><span className="text-[13px] font-medium">Dónde quieres comprar</span><div><Segmented label="Mercado" value={prefs.market} onChange={(market) => setP({ market })} options={[{ value: 'ES', label: 'España' }, { value: 'UE', label: 'Unión Europea' }, { value: 'INT', label: 'Internacional' }]} /></div></div>
         </div>
-      )}
-
-      {tab === 'fotos' && (
-        <div className="mt-6 flex flex-col gap-5">
+            </div>
+          )}
+        </section>
+        <section className="border-b border-line">
+          <button type="button" onClick={() => toggle('datos')} aria-expanded={open === 'datos'} className="flex w-full items-center justify-between gap-3 py-4 text-left">
+            <span className="min-w-0"><span className="block text-[15px] font-medium">Tus datos y privacidad</span><span className="block truncate text-xs text-muted">Exportar, importar, fotos y borrar</span></span>
+            <ChevronDown size={18} className={cx('shrink-0 text-muted transition-transform', open === 'datos' && 'rotate-180')} />
+          </button>
+          {open === 'datos' && (
+            <div className="anim-fade pb-8">
+        <div className="mt-2 flex max-w-3xl flex-col gap-10">
+          <DataTransfer />
+        <div className="flex flex-col gap-5"><h2 className="display text-2xl">Fotos de referencia</h2>
           <Notice>Las fotografías de referencia son opcionales y <strong>se guardan solo en este dispositivo</strong>: no se suben a ningún servidor ni se usan para entrenar modelos. En esta versión sirven de referencia personal; el probador sobre foto llegará en la Fase 3.</Notice>
           <input ref={file} id="ref-photo" type="file" accept="image/*" className="sr-only" onChange={async (e) => {
             const f = e.target.files?.[0]; e.target.value = '';
@@ -134,10 +158,7 @@ export function Profile() {
             </ul>
           )}
         </div>
-      )}
-
-      {tab === 'privacidad' && (
-        <div className="mt-6 flex max-w-2xl flex-col gap-7 text-sm leading-relaxed">
+        <div className="flex max-w-2xl flex-col gap-7 text-sm leading-relaxed">
           <section>
             <h2 className="display text-2xl">Dónde están tus datos</h2>
             <p className="mt-2">{STORAGE[sync]}</p>
@@ -151,17 +172,24 @@ export function Profile() {
             </label>
           </section>
           <section>
-            <h2 className="display text-2xl">Llévate o borra tus datos</h2>
+            <h2 className="display text-2xl">Borrar tus datos</h2>
             <div className="mt-3 flex flex-wrap gap-2">
-              <Button variant="outline" onClick={exportData}>{copied ? <><Check size={15} />Copiado al portapapeles</> : <><Copy size={15} />Copiar mis datos (JSON)</>}</Button>
               <Button variant="danger" onClick={() => setWipe(true)}><Trash2 size={15} />Eliminar todos mis datos</Button>
             </div>
           </section>
         </div>
-      )}
-
-      {tab === 'app' && (
-        <div className="mt-6 flex max-w-3xl flex-col gap-8">
+        </div>
+            </div>
+          )}
+        </section>
+        <section className="border-b border-line">
+          <button type="button" onClick={() => toggle('ajustes')} aria-expanded={open === 'ajustes'} className="flex w-full items-center justify-between gap-3 py-4 text-left">
+            <span className="min-w-0"><span className="block text-[15px] font-medium">Ajustes</span><span className="block truncate text-xs text-muted">Tema y catálogo</span></span>
+            <ChevronDown size={18} className={cx('shrink-0 text-muted transition-transform', open === 'ajustes' && 'rotate-180')} />
+          </button>
+          {open === 'ajustes' && (
+            <div className="anim-fade pb-8">
+        <div className="flex max-w-3xl flex-col gap-8">
           <section>
             <h2 className="display text-2xl">Apariencia</h2>
             <div className="mt-3"><Segmented label="Tema" value={theme} onChange={setTheme} options={[{ value: 'light', label: 'Claro' }, { value: 'dark', label: 'Oscuro' }, { value: 'auto', label: 'Según el sistema' }]} /></div>
@@ -171,7 +199,18 @@ export function Profile() {
             <p className="mt-1 text-[13px] text-muted">{mode === 'real' ? `Tiendas reales: ${catalog.list().length} productos de hombre de ${catalog.brands().map((b) => b.name).join(', ')}. Precios leídos el ${seenLabel(catalog.seenAt)}; no se actualizan solos.` : 'Catálogo de demostración: marcas y productos ficticios, útil para probar todos los estilos y las tablas de tallas.'}</p>
             <div className="mt-3"><Segmented label="Catálogo" value={mode} onChange={(m) => { useApp.getState().setCatalog(m); notify(m === 'real' ? 'Catálogo de tiendas reales activado' : 'Catálogo de demostración activado'); }} options={[{ value: 'real', label: 'Tiendas reales' }, { value: 'demo', label: 'Demostración' }]} /></div>
           </section>
-          <DataTransfer />
+        </div>
+            </div>
+          )}
+        </section>
+        <section className="border-b border-line">
+          <button type="button" onClick={() => toggle('acerca')} aria-expanded={open === 'acerca'} className="flex w-full items-center justify-between gap-3 py-4 text-left">
+            <span className="min-w-0"><span className="block text-[15px] font-medium">Acerca de Percha</span><span className="block truncate text-xs text-muted">Precios del {seenLabel(catalog.seenAt)} · qué funciona y qué no</span></span>
+            <ChevronDown size={18} className={cx('shrink-0 text-muted transition-transform', open === 'acerca' && 'rotate-180')} />
+          </button>
+          {open === 'acerca' && (
+            <div className="anim-fade pb-8">
+        <div className="flex max-w-3xl flex-col gap-8">
           <section>
             <h2 className="display text-2xl">Fotos de las tiendas</h2>
             <p className="mt-1 text-[13px] text-muted">Las fotos se piden a la web de cada tienda. Aquí ves cuáles ha podido cargar este navegador ahora mismo. Si todas salen bloqueadas, es el sitio donde está alojada la app el que lo impide.</p>
@@ -201,7 +240,10 @@ export function Profile() {
             </table>
           </section>
         </div>
-      )}
+            </div>
+          )}
+        </section>
+      </div>
 
       <Confirm open={wipe} title="Eliminar todos mis datos" body="Se borrarán tus medidas, gustos, armario, fotografías, favoritos e historial, en este dispositivo y en tu cuenta. No se puede deshacer." action="Eliminar todo" onClose={() => setWipe(false)}
         onConfirm={() => { void useApp.getState().resetAll().then(() => notify('Datos eliminados. Has vuelto al perfil de ejemplo')); }} />

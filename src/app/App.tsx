@@ -1,9 +1,8 @@
 import { useEffect } from 'react';
-import { Heart, House, Shirt, Sparkles, TrendingUp, UserRound } from 'lucide-react';
+import { Heart, House, Shirt, Sparkles, UserRound } from 'lucide-react';
 import { startSync, useApp } from './store';
 import { go, parseRoute, useHash, type Route } from './router';
 import { decodeLook } from '@/features/outfits/share';
-import { catalog, seenLabel } from '@/services/catalog';
 import { Home } from '@/pages/Home';
 import { Create } from '@/pages/Create';
 import { Trends } from '@/pages/Trends';
@@ -17,9 +16,7 @@ import { cx, Toast } from '@/ui/primitives';
 const NAV: { route: Route; label: string; short: string; icon: typeof House }[] = [
   { route: 'inicio', label: 'Inicio', short: 'Inicio', icon: House },
   { route: 'crear', label: 'Crear outfit', short: 'Crear', icon: Sparkles },
-  { route: 'tendencias', label: 'Tendencias', short: 'Tendencias', icon: TrendingUp },
   { route: 'armario', label: 'Mi armario', short: 'Armario', icon: Shirt },
-  { route: 'favoritos', label: 'Favoritos', short: 'Favoritos', icon: Heart },
   { route: 'perfil', label: 'Mi perfil', short: 'Perfil', icon: UserRound },
 ];
 
@@ -32,7 +29,6 @@ export function App() {
   const onboarding = useApp((s) => s.onboarding);
   const toast = useApp((s) => s.toast);
   const theme = useApp((s) => s.prefsSlice.theme);
-  const sync = useApp((s) => s.sync);
   const mode = useApp((s) => s.prefsSlice.catalogMode);
   const isDemo = mode === 'demo';
   const savedCount = useApp((s) => s.saved.outfits.length + s.saved.productIds.length);
@@ -56,6 +52,9 @@ export function App() {
     if (outfit) s.openOutfit(outfit); else s.notify('El enlace no corresponde a ningún look');
   }, [hash]);
 
+  // Al cambiar de sección (o con el botón atrás del móvil) se cierra el look abierto.
+  useEffect(() => { if (!hash.startsWith('look-')) useApp.getState().openOutfit(null); }, [route]);
+
   useEffect(() => { document.body.style.overflow = open || onboarding ? 'hidden' : ''; }, [open, onboarding]);
 
   const Page = PAGES[route];
@@ -71,20 +70,26 @@ export function App() {
             <button key={r} type="button" onClick={() => go(r)} aria-current={route === r ? 'page' : undefined}
               className={cx('flex h-11 items-center gap-3 rounded-sm px-3 text-sm transition-colors', route === r ? 'bg-ink font-medium text-paper' : 'text-ink hover:bg-tile')}>
               <Icon size={18} strokeWidth={1.75} />{label}
-              {r === 'favoritos' && savedCount > 0 && <span className={cx('tabular ml-auto text-xs', route === r ? 'opacity-80' : 'text-muted')}>{savedCount}</span>}
             </button>
           ))}
+          <button type="button" onClick={() => go('favoritos')} aria-current={route === 'favoritos' ? 'page' : undefined}
+            className={cx('mt-4 flex h-10 items-center gap-3 rounded-sm px-3 text-[13px] transition-colors', route === 'favoritos' ? 'bg-ink font-medium text-paper' : 'text-muted hover:bg-tile hover:text-ink')}>
+            <Heart size={16} strokeWidth={1.75} />Guardados{savedCount > 0 && <span className="tabular ml-auto text-xs">{savedCount}</span>}
+          </button>
         </nav>
-        <div className="mt-auto flex flex-col gap-2 text-2xs leading-relaxed text-muted">
+        <div className="mt-auto text-2xs leading-relaxed text-muted">
           {profile.isExample && <button type="button" onClick={() => useApp.getState().setOnboarding(true)} className="rounded-sm bg-accent-soft px-3 py-2.5 text-left text-xs text-ink">Perfil de ejemplo activo. <span className="underline underline-offset-2">Configurar el mío</span></button>}
-          <p>{isDemo ? 'Catálogo de demostración: productos y precios simulados.' : `Tiendas reales. Precios vistos el ${seenLabel(catalog.seenAt)}.`}</p>
-          <p>{sync === 'cloud' ? 'Datos guardados en tu cuenta.' : sync === 'memory' ? 'Este navegador no guarda datos.' : 'Datos guardados en este dispositivo.'}</p>
+          {isDemo && <p className="mt-2">Catálogo de demostración.</p>}
         </div>
       </aside>
 
       <header className="flex items-center justify-between border-b border-line px-6 py-2.5 lg:hidden">
         <button type="button" onClick={() => go('inicio')} className="display text-[1.7rem] italic leading-none">Percha</button>
-        <span className="rounded-full border border-dashed border-muted/70 px-2 py-0.5 text-[10px] text-muted">{isDemo ? 'Catálogo de demostración' : `Precios del ${seenLabel(catalog.seenAt)}`}</span>
+        <button type="button" onClick={() => go('favoritos')} aria-label={`Guardados${savedCount ? ` (${savedCount})` : ''}`} aria-current={route === 'favoritos' ? 'page' : undefined}
+          className={cx('relative -mr-2 grid h-10 w-10 place-items-center rounded-full', route === 'favoritos' ? 'text-accent' : 'text-ink')}>
+          <Heart size={21} strokeWidth={1.75} fill={route === 'favoritos' ? 'currentColor' : 'none'} />
+          {savedCount > 0 && <span className="tabular absolute right-0.5 top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-accent px-1 text-[9px] font-semibold text-paper">{savedCount > 99 ? '99+' : savedCount}</span>}
+        </button>
       </header>
 
       <main id="main-scroll" className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden">
@@ -93,10 +98,10 @@ export function App() {
         </div>
       </main>
 
-      <nav aria-label="Secciones" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-6 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
+      <nav aria-label="Secciones" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
         {NAV.map(({ route: r, short, icon: Icon }) => (
           <button key={r} type="button" onClick={() => go(r)} aria-current={route === r ? 'page' : undefined}
-            className={cx('flex h-[60px] flex-col items-center justify-center gap-1 text-[10px]', route === r ? 'font-semibold text-accent' : 'text-muted')}>
+            className={cx('flex h-[60px] flex-col items-center justify-center gap-1 text-[11px]', route === r ? 'font-semibold text-accent' : 'text-muted')}>
             <Icon size={20} strokeWidth={route === r ? 2.2 : 1.6} />{short}
           </button>
         ))}

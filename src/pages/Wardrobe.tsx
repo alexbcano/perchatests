@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { Camera, ExternalLink, ImageDown, Link2, Loader2, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Camera, ExternalLink, ImageDown, Link2, Loader2, Pencil, Plus, SlidersHorizontal, Trash2 } from 'lucide-react';
 import type { Category, ColorKey, GarmentType, Season, WardrobeItem } from '@/domain/types';
 import { uid, useApp } from '@/app/store';
 import { createWith } from '@/app/router';
@@ -24,6 +24,8 @@ export function Wardrobe() {
   const [form, setForm] = useState<(WardrobeItem & { lookMsg?: string }) | null>(null);
   const [del, setDel] = useState<WardrobeItem | null>(null);
   const [links, setLinks] = useState(false);
+  const [adding, setAdding] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const examples = wardrobe.filter((w) => w.example).length;
 
   const list = wardrobe.filter((w) =>
@@ -56,16 +58,10 @@ export function Wardrobe() {
 
   return (
     <div>
-      <PageHeader title="Mi armario" lead="Registra lo que ya tienes. Percha lo combina primero y solo propone comprar lo que falta."
-        action={<div className="grid w-full grid-cols-1 gap-2 sm:flex sm:w-auto"><Button onClick={() => setForm(blank())}><Plus size={16} />Añadir prenda</Button><Button variant="outline" onClick={() => setLinks(true)}><Link2 size={16} />Añadir desde enlace</Button></div>} />
+      <PageHeader title="Mi armario" action={<Button onClick={() => setAdding(true)}><Plus size={16} />Añadir</Button>} />
 
       {examples > 0 && (
-        <Notice>
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <span>Hay {examples} prendas de <strong>ejemplo</strong> para que puedas probar el armario. Quítalas cuando añadas las tuyas.</span>
-            <Button size="sm" variant="outline" onClick={() => { patch('wardrobe', (cur) => cur.filter((w) => !w.example)); notify('Prendas de ejemplo quitadas'); }}>Quitar ejemplos</Button>
-          </div>
-        </Notice>
+        <p className="mt-3 text-[13px] text-muted">Incluye {examples} prendas de ejemplo. <button type="button" className="font-medium text-ink underline underline-offset-4" onClick={() => { patch('wardrobe', (cur) => cur.filter((w) => !w.example)); notify('Prendas de ejemplo quitadas'); }}>Quitarlas</button></p>
       )}
 
       {wardrobe.length > 0 && (
@@ -74,47 +70,53 @@ export function Wardrobe() {
             <p className="display text-3xl">{wardrobe.length} {wardrobe.length === 1 ? 'prenda' : 'prendas'}</p>
             <p className="mt-1 text-[13px] text-muted">{counts.filter((x) => x.n).map((x) => `${x.n} ${(x.n === 1 ? CATEGORY_LABEL[x.c] : CATEGORY_PLURAL[x.c]).toLowerCase()}`).join(', ')}</p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Button variant="accent" onClick={() => createWith({ source: 'wardrobe' })}>Crear looks solo con mi armario</Button>
-            <Button variant="outline" onClick={() => createWith({ source: 'mix' })}>Combinar con compras</Button>
-          </div>
+          <div><Button variant="accent" onClick={() => createWith({ source: 'wardrobe' })}>Crear looks con mi ropa</Button></div>
         </div>
       )}
 
       <WardrobeGaps />
 
       {wardrobe.length === 0 ? (
-        <div className="mt-6"><Empty title="Tu armario está vacío" body="Añade las prendas que más usas: con una parte de arriba, una de abajo y un calzado ya se pueden crear looks sin comprar nada." action={<div className="flex flex-wrap justify-center gap-2"><Button onClick={() => setForm(blank())}><Plus size={16} />Añadir mi primera prenda</Button><Button variant="outline" onClick={() => setLinks(true)}><Link2 size={16} />Pegar enlace de tienda</Button></div>} /></div>
+        <div className="mt-6"><Empty title="Tu armario está vacío" body="Añade las prendas que más usas: con una parte de arriba, una de abajo y un calzado ya se pueden crear looks sin comprar nada." action={<Button onClick={() => setAdding(true)}><Plus size={16} />Añadir mi primera prenda</Button>} /></div>
       ) : (
         <>
-          <div className="mt-6 flex flex-wrap items-end gap-3">
+          <div className="mt-8 flex items-center justify-between gap-3">
+            <h2 className="display text-2xl">Tus prendas</h2>
+            <Button size="sm" variant={filtersOn ? 'primary' : 'outline'} aria-expanded={filtersOpen} onClick={() => setFiltersOpen((v) => !v)}><SlidersHorizontal size={14} />Filtrar{filtersOn ? ' (activo)' : ''}</Button>
+          </div>
+          {filtersOpen && (
+          <div className="anim-fade mt-3 flex flex-wrap items-end gap-3">
             <Segmented label="Tipo de prenda" size="sm" value={cat} onChange={setCat} options={[{ value: 'all', label: 'Todas' }, ...CATEGORY_ORDER.map((c) => ({ value: c, label: CATEGORY_PLURAL[c] }))]} />
             <Field id="w-color" label="Color"><select id="w-color" className={cx(inputCls, 'h-10 w-40')} value={color} onChange={(e) => setColor(e.target.value)}><option value="">Todos</option>{usedColors.map((c) => <option key={c} value={c}>{colorName(c)}</option>)}</select></Field>
             <Field id="w-season" label="Temporada"><select id="w-season" className={cx(inputCls, 'h-10 w-36')} value={season} onChange={(e) => setSeason(e.target.value)}><option value="">Todas</option>{SEASONS.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}</select></Field>
             <Field id="w-q" label="Buscar por nombre o marca"><input id="w-q" className={cx(inputCls, 'h-10 w-48')} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ej.: vaquero" /></Field>
             {filtersOn && <Button size="sm" variant="ghost" onClick={() => { setCat('all'); setColor(''); setSeason(''); setQ(''); }}>Quitar filtros</Button>}
           </div>
-          <p className="mt-4 text-[13px] text-muted">{list.length} de {wardrobe.length} prendas</p>
+          )}
+          {filtersOn && <p className="mt-4 text-[13px] text-muted">{list.length} de {wardrobe.length} prendas</p>}
           {list.length === 0 && <div className="mt-3"><Empty title="Nada con estos filtros" body="Prueba con otra categoría, color o temporada." /></div>}
           <ul className="mt-3 grid grid-cols-2 gap-x-4 gap-y-7 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
             {list.map((w) => (
-              <li key={w.id} className="relative flex min-w-0 flex-col">
-                <div className="aspect-square w-full overflow-hidden rounded-sm bg-tile"><ProductThumb product={wardrobeToProduct(w)} className="h-full w-full" /></div>
-                <div className="absolute right-2 top-2 flex flex-col gap-1.5">
-                  <IconButton label={`Editar ${w.name}`} onClick={() => setForm(w)} className="h-9 w-9"><Pencil size={15} /></IconButton>
-                  <IconButton label={`Eliminar ${w.name}`} onClick={() => setDel(w)} className="h-9 w-9"><Trash2 size={15} /></IconButton>
-                </div>
-                <p className="mt-2.5 text-sm font-medium leading-snug">{w.name}</p>
-                <p className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-muted"><ColorDot color={w.color} size={12} />{typeLabel(w.type)}{w.brand && `, ${w.brand}`}{w.example && <Pill>Ejemplo</Pill>}</p>
-                <p className="mt-0.5 text-2xs text-muted">{w.seasons.length === 4 ? 'Todo el año' : w.seasons.map(seasonLabel).join(', ')}</p>
-                {w.url && <a href={w.url} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 self-start text-xs font-medium underline underline-offset-2"><ExternalLink size={12} />Ver en {hostOf(w.url)}</a>}
+              <li key={w.id} className="min-w-0">
+                <button type="button" onClick={() => setForm(w)} className="group flex w-full flex-col text-left" aria-label={`Editar ${w.name}`}>
+                  <span className="block aspect-square w-full overflow-hidden rounded-sm bg-tile ring-accent group-hover:ring-2"><ProductThumb product={wardrobeToProduct(w)} className="h-full w-full" /></span>
+                  <span className="mt-2.5 text-sm font-medium leading-snug">{w.name}</span>
+                  <span className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-muted"><ColorDot color={w.color} size={12} />{typeLabel(w.type)}{w.example && <Pill>Ejemplo</Pill>}</span>
+                </button>
               </li>
             ))}
           </ul>
         </>
       )}
 
-      <WardrobeForm value={form} onClose={() => setForm(null)} onSave={save} />
+      <Sheet open={adding} onClose={() => setAdding(false)} title="Añadir prenda">
+        <div className="flex flex-col gap-2">
+          <Button block onClick={() => { setAdding(false); setLinks(true); }}><Link2 size={16} />Con el enlace de la tienda</Button>
+          <Button block variant="outline" onClick={() => { setAdding(false); setForm(blank()); }}><Pencil size={16} />A mano</Button>
+          <p className="mt-1 text-xs text-muted">Con el enlace se rellenan solos el nombre y la foto.</p>
+        </div>
+      </Sheet>
+      <WardrobeForm value={form} onClose={() => setForm(null)} onSave={save} onDelete={(w) => { setForm(null); setDel(w); }} />
       <LinkSheet open={links} onClose={() => setLinks(false)}
         existing={(url) => wardrobe.find((w) => w.url && sameLink(w.url, url))}
         onOne={(item) => { setLinks(false); setForm(item); }}
@@ -131,7 +133,7 @@ export function Wardrobe() {
   );
 }
 
-function WardrobeForm({ value, onClose, onSave }: { value: (WardrobeItem & { lookMsg?: string }) | null; onClose: () => void; onSave: (w: WardrobeItem) => void }) {
+function WardrobeForm({ value, onClose, onSave, onDelete }: { value: (WardrobeItem & { lookMsg?: string }) | null; onClose: () => void; onSave: (w: WardrobeItem) => void; onDelete: (w: WardrobeItem) => void }) {
   const [d, setD] = useState<WardrobeItem | null>(null);
   const [key, setKey] = useState<string | null>(null);
   const [tried, setTried] = useState(false);
@@ -152,7 +154,7 @@ function WardrobeForm({ value, onClose, onSave }: { value: (WardrobeItem & { loo
   };
   return (
     <Sheet open={!!value} onClose={onClose} title={value && wasSaved ? 'Editar prenda' : 'Añadir prenda'} wide
-      footer={<><Button variant="ghost" onClick={onClose}>Cancelar</Button><Button onClick={submit}>Guardar prenda</Button></>}>
+      footer={<>{wasSaved && value ? <Button variant="ghost" className="mr-auto text-bad" onClick={() => onDelete(value)}><Trash2 size={15} />Eliminar</Button> : null}<Button variant="ghost" onClick={onClose}>Cancelar</Button><Button onClick={submit}>Guardar</Button></>}>
       {d && (
         <div className="grid gap-6 sm:grid-cols-[180px_1fr]">
           <div className="flex flex-col gap-2">
@@ -192,7 +194,7 @@ function WardrobeForm({ value, onClose, onSave }: { value: (WardrobeItem & { loo
             </Field>
             <Field id="w-name" label="Nombre" optional hint="Si lo dejas vacío usamos el tipo y el color."><input id="w-name" className={inputCls} value={d.name} onChange={(e) => set({ name: e.target.value })} placeholder={`${typeLabel(d.type)} ${colorName(d.color).toLowerCase()}`} /></Field>
             <Field id="w-brand" label="Marca" optional><input id="w-brand" className={inputCls} value={d.brand} onChange={(e) => set({ brand: e.target.value })} /></Field>
-            <Field id="w-url" label="Enlace de la tienda" optional hint="La ficha donde la compraste. Sale como botón en tu armario y en los looks."><input id="w-url" type="url" inputMode="url" className={inputCls} value={d.url ?? ''} onChange={(e) => set({ url: e.target.value, catalogId: undefined })} placeholder="https://…" /></Field>
+            <Field id="w-url" label="Enlace de la tienda" optional hint="La ficha donde la compraste. Sale como botón en los looks."><input id="w-url" type="url" inputMode="url" className={inputCls} value={d.url ?? ''} onChange={(e) => set({ url: e.target.value, catalogId: undefined })} placeholder="https://…" />{d.url && wasSaved && <a href={d.url} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 self-start text-xs font-medium underline underline-offset-2"><ExternalLink size={12} />Abrir en {hostOf(d.url)}</a>}</Field>
             {!d.photo && <Field id="w-img" label="Enlace de la foto" optional hint="En la web de la tienda: mantén pulsada la foto (o clic derecho) y copia la dirección de la imagen."><input id="w-img" type="url" inputMode="url" className={inputCls} value={d.imageUrl ?? ''} onChange={(e) => set({ imageUrl: e.target.value })} placeholder="https://…jpg" /></Field>}
             <div className="flex flex-col gap-2">
               <span className="text-[13px] font-medium">Color principal: <span className="font-normal text-muted">{colorName(d.color)}</span></span>

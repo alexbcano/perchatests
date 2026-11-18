@@ -172,12 +172,12 @@ export const useApp = create<State>((set, get) => ({
       outfits: has ? cur.outfits.filter((x) => x.id !== o.id) : [o, ...cur.outfits],
       collections: has ? cur.collections.map((c) => ({ ...c, outfitIds: c.outfitIds.filter((id) => id !== o.id) })) : cur.collections,
     }));
-    get().notify(has ? 'Look quitado de favoritos' : 'Look guardado en favoritos');
+    get().notify(has ? 'Look quitado de guardados' : 'Look guardado');
   },
   toggleSaveProduct(id) {
     const has = get().saved.productIds.includes(id);
     get().patch('saved', (cur) => ({ ...cur, productIds: has ? cur.productIds.filter((x) => x !== id) : [id, ...cur.productIds] }));
-    get().notify(has ? 'Prenda quitada de favoritos' : 'Prenda guardada en favoritos');
+    get().notify(has ? 'Prenda quitada de guardados' : 'Prenda guardada');
   },
   toggleCompare(o) {
     const cur = get().compare;

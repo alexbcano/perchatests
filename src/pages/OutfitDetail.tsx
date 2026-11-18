@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, Heart, Share2, Columns2, ChevronDown, ExternalLink, Repeat2, Trash2, Sparkles, Minus, Plus, FolderPlus, Pin, Copy, Check, Wand2 } from 'lucide-react';
+import { ArrowLeft, Heart, Share2, Columns2, ChevronDown, MoreHorizontal, ExternalLink, Repeat2, Trash2, Sparkles, Minus, Plus, FolderPlus, Pin, Copy, Check, Wand2 } from 'lucide-react';
 import type { ColorKey, Outfit, Piece, Product } from '@/domain/types';
 import { useApp, uid } from '@/app/store';
 import { catalog, resolveOutfit, seenLabel } from '@/services/catalog';
@@ -20,7 +20,7 @@ import { AVAIL, ConceptTag, OutfitCard } from '@/ui/cards';
 import { Button, ColorDot, cx, DemoTag, IconButton, Meter, Notice, Pill, Segmented, Sheet } from '@/ui/primitives';
 import { RefWidth } from '@/ui/RefWidth';
 
-type Tab = 'prendas' | 'probador' | 'consejos';
+type Tab = 'porque' | 'probador' | 'consejos';
 
 export function OutfitDetail() {
   const outfit = useApp((s) => s.open)!;
@@ -28,22 +28,23 @@ export function OutfitDetail() {
   const saved = useApp((s) => s.saved.outfits.some((o) => o.id === outfit.id));
   const comparing = useApp((s) => s.compare.some((o) => o.id === outfit.id));
   const { openOutfit, toggleSaveOutfit, toggleCompare } = useApp.getState();
-  const [tab, setTab] = useState<Tab>('prendas');
   const [share, setShare] = useState(false);
   const [collect, setCollect] = useState(false);
-  const [showParts, setShowParts] = useState(false);
+  const [more, setMore] = useState(false);
+  const [section, setSection] = useState<Tab | null>(null);
   const items = useMemo(() => resolveOutfit(outfit.pieces, wardrobe), [outfit, wardrobe]);
   const hasPhotos = useLookHasPhotos(items);
   const scroller = useRef<HTMLDivElement>(null);
-  useEffect(() => { scroller.current?.scrollTo({ top: 0 }); setTab('prendas'); }, [outfit.name, outfit.style]);
+  useEffect(() => { scroller.current?.scrollTo({ top: 0 }); setSection(null); }, [outfit.name, outfit.style]);
+  const buyCount = items.filter((i) => !i.piece.own).length;
+  const real = items.some((i) => !i.product.demo && !i.piece.own);
 
   return (
     <div ref={scroller} className="anim-fade fixed inset-0 z-40 overflow-y-auto bg-paper">
       <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-line bg-paper/90 px-6 py-2.5 backdrop-blur sm:px-8">
         <Button variant="ghost" size="sm" onClick={() => openOutfit(null)} className="-ml-2"><ArrowLeft size={17} />Volver</Button>
         <div className="flex items-center gap-1.5">
-          <IconButton label={comparing ? 'Quitar de la comparación' : 'Añadir a la comparación'} active={comparing} onClick={() => toggleCompare(outfit)}><Columns2 size={17} /></IconButton>
-          <IconButton label="Añadir a una colección" onClick={() => setCollect(true)}><FolderPlus size={17} /></IconButton>
+          <IconButton label="Más acciones" onClick={() => setMore(true)}><MoreHorizontal size={18} /></IconButton>
           <IconButton label="Compartir look" onClick={() => setShare(true)}><Share2 size={17} /></IconButton>
           <Button size="sm" variant={saved ? 'primary' : 'outline'} onClick={() => toggleSaveOutfit(outfit)}><Heart size={15} fill={saved ? 'currentColor' : 'none'} />{saved ? 'Guardado' : 'Guardar'}</Button>
         </div>
@@ -55,81 +56,91 @@ export function OutfitDetail() {
             <LookImage items={items} backdrop={outfit.backdrop} className="anim-cover h-full w-full" label={`Imagen de ${outfit.name}`} />
             <ConceptTag photos={hasPhotos} className="absolute bottom-3 left-3" />
           </div>
-          <p className="mx-auto mt-2 max-w-md text-2xs text-muted lg:max-w-none">{hasPhotos ? 'Fotos de cada prenda tomadas de la web de su tienda. No es una foto del conjunto puesto: para ver cómo queda junto, abre el Probador.' : 'Dibujo generado a partir de las prendas del look. No es una fotografía de los productos que se compran.'}</p>
         </div>
 
         <div className="min-w-0">
-          <p className="text-[13px] text-muted">{styleName(outfit.style)}</p>
-          <h1 className="display mt-1 text-[2.5rem] leading-none sm:text-6xl">{outfit.name}</h1>
-          <p className="mt-4 max-w-[62ch] text-[15px] leading-relaxed">{outfit.description}</p>
+          <h1 className="display text-[2.5rem] leading-none sm:text-6xl">{outfit.name}</h1>
+          <p className="tabular mt-3 text-sm text-muted">
+            {buyCount > 0 ? <><span className="font-medium text-ink">{euro(outfit.total)}</span> · {buyCount} {buyCount === 1 ? 'prenda por comprar' : 'prendas por comprar'}</> : 'Todo de tu armario'}
+          </p>
 
-          <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-4 border-y border-line py-4 sm:grid-cols-4">
-            <div><dt className="text-2xs text-muted">Ocasión</dt><dd className="mt-0.5 text-sm font-medium">{occasionLabel(outfit.occasion)}</dd></div>
-            <div><dt className="text-2xs text-muted">Temporada</dt><dd className="mt-0.5 text-sm font-medium">{seasonLabel(outfit.season)}</dd></div>
-            <div><dt className="text-2xs text-muted">Total del conjunto</dt><dd className="tabular mt-0.5 text-sm font-medium">{outfit.total ? euro(outfit.total) : 'Sin compras'}{outfit.budget > 0 && <span className="font-normal text-muted"> de {euro(outfit.budget)}</span>}</dd></div>
-            <div>
-              <dt className="text-2xs text-muted">Compatibilidad contigo</dt>
-              <dd className="mt-0.5">
-                <button type="button" onClick={() => setShowParts((v) => !v)} aria-expanded={showParts} className="tabular inline-flex items-center gap-1 text-sm font-medium underline decoration-line underline-offset-4">
-                  {outfit.compat} %<ChevronDown size={14} className={cx('transition-transform', showParts && 'rotate-180')} />
+          <div className="mt-5"><PiecesTab outfit={outfit} items={items} /></div>
+
+          <div className="mt-8 border-t border-line">
+            {([
+              ['porque', 'Por qué te lo recomendamos'],
+              ['consejos', 'Consejos y variaciones'],
+              ['probador', 'Probador'],
+            ] as [Tab, string][]).map(([key, label]) => (
+              <div key={key} className="border-b border-line">
+                <button type="button" onClick={() => setSection(section === key ? null : key)} aria-expanded={section === key} className="flex w-full items-center justify-between py-4 text-left text-[15px] font-medium">
+                  {label}<ChevronDown size={18} className={cx('text-muted transition-transform', section === key && 'rotate-180')} />
                 </button>
-              </dd>
-            </div>
-          </dl>
-          {showParts && (
-            <div className="anim-fade grid gap-x-8 gap-y-3 border-b border-line py-4 sm:grid-cols-2">
-              {outfit.compatParts.map((p) => (
-                <div key={p.key} className="flex flex-col gap-1.5">
-                  <div className="tabular flex justify-between text-xs"><span>{p.label} <span className="text-muted">(pesa {p.weight} %)</span></span><span>{Math.round(p.score * 100)} %</span></div>
-                  <Meter value={p.score} tone={p.score >= 0.8 ? 'ok' : p.score >= 0.55 ? 'ink' : 'warn'} />
-                </div>
-              ))}
-            </div>
-          )}
-
-          <section className="mt-6">
-            <h2 className="text-sm font-semibold">Por qué te lo recomendamos</h2>
-            <ul className="mt-2 flex flex-col gap-1.5 text-sm leading-relaxed">
-              {outfit.reasons.map((r, i) => <li key={i} className="flex gap-2.5"><span className="mt-[9px] h-1 w-1 shrink-0 rounded-full bg-accent" />{r}</li>)}
-            </ul>
-          </section>
-
-          <div className="sticky top-[57px] z-[5] -mx-6 mt-7 bg-paper/95 px-6 py-2 backdrop-blur sm:-mx-2 sm:px-2">
-            <Segmented label="Secciones del look" value={tab} onChange={setTab} options={[{ value: 'prendas', label: `Prendas (${items.length})` }, { value: 'probador', label: 'Probador' }, { value: 'consejos', label: 'Consejos' }]} />
+                {section === key && (
+                  <div className="anim-fade pb-6">
+                    {key === 'porque' && <WhySection outfit={outfit} />}
+                    {key === 'consejos' && <AdviceTab outfit={outfit} />}
+                    {key === 'probador' && <TryOnTab outfit={outfit} items={items} />}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
-          <div className="mt-4">
-            {tab === 'prendas' && <PiecesTab outfit={outfit} items={items} />}
-            {tab === 'probador' && <TryOnTab outfit={outfit} items={items} />}
-            {tab === 'consejos' && <AdviceTab outfit={outfit} />}
-          </div>
+
+          <p className="mt-6 text-2xs leading-relaxed text-muted">
+            {real ? `Precios vistos el ${seenLabel(catalog.seenAt ?? items.find((i) => i.product.seenAt)?.product.seenAt)}; el vigente es el de cada tienda. ` : ''}
+            {items.some((i) => i.product.demo) ? 'Incluye productos de demostración. ' : ''}
+            {hasPhotos ? 'Fotos de cada prenda tomadas de su tienda.' : 'Dibujo orientativo, no es una foto de los productos.'}
+          </p>
         </div>
       </div>
       <ShareSheet open={share} onClose={() => setShare(false)} outfit={outfit} />
       <CollectionSheet open={collect} onClose={() => setCollect(false)} outfit={outfit} />
+      <Sheet open={more} onClose={() => setMore(false)} title="Más acciones">
+        <div className="flex flex-col gap-2">
+          <Button variant="outline" block onClick={() => { setMore(false); setCollect(true); }}><FolderPlus size={16} />Añadir a una colección</Button>
+          <Button variant="outline" block onClick={() => { toggleCompare(outfit); setMore(false); }}><Columns2 size={16} />{comparing ? 'Quitar de la comparación' : 'Comparar con otro look'}</Button>
+        </div>
+      </Sheet>
+    </div>
+  );
+}
+
+function WhySection({ outfit }: { outfit: Outfit }) {
+  return (
+    <div className="flex flex-col gap-5">
+      <p className="text-[15px] leading-relaxed">{outfit.description}</p>
+      <ul className="flex flex-col gap-1.5 text-sm leading-relaxed">
+        {outfit.reasons.map((r, i) => <li key={i} className="flex gap-2.5"><span className="mt-[9px] h-1 w-1 shrink-0 rounded-full bg-accent" />{r}</li>)}
+      </ul>
+      <div>
+        <p className="tabular text-sm"><span className="font-medium">{outfit.compat} %</span> de compatibilidad contigo · {styleName(outfit.style)} · {occasionLabel(outfit.occasion)} · {seasonLabel(outfit.season)}</p>
+        <div className="mt-3 grid gap-x-8 gap-y-3 sm:grid-cols-2">
+          {outfit.compatParts.map((p) => (
+            <div key={p.key} className="flex flex-col gap-1.5">
+              <div className="tabular flex justify-between text-xs"><span>{p.label}</span><span>{Math.round(p.score * 100)} %</span></div>
+              <Meter value={p.score} tone={p.score >= 0.8 ? 'ok' : p.score >= 0.55 ? 'ink' : 'warn'} />
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
 
 // ───────────────────────── Prendas ─────────────────────────
 function PiecesTab({ outfit, items }: { outfit: Outfit; items: Resolved[] }) {
-  const [openRef, setOpenRef] = useState<string | null>(items[0]?.piece.ref ?? null);
+  const [openRef, setOpenRef] = useState<string | null>(null);
   const [swapFor, setSwapFor] = useState<Resolved | null>(null);
   const [addOpen, setAddOpen] = useState(false);
-  const buyCount = items.filter((i) => !i.piece.own).length;
   return (
     <div className="flex flex-col gap-3">
-      {items.some((i) => i.product.demo) && <Notice>Los productos marcados como «Demo» son <strong>datos de demostración</strong>: no corresponden a tiendas reales ni se pueden comprar.</Notice>}
-      {items.some((i) => !i.product.demo && !i.piece.own) && <Notice>Productos reales con enlace a su tienda. Precio y tallas leídos el {seenLabel(catalog.seenAt ?? items.find((i) => i.product.seenAt)?.product.seenAt)}: pueden haber cambiado, el dato vigente es el de la ficha. El dibujo y su color son orientativos.</Notice>}
       <ul className="flex flex-col divide-y divide-line border-y border-line">
         {items.map((it) => (
           <PieceRow key={it.piece.ref} outfit={outfit} item={it} open={openRef === it.piece.ref} onToggle={() => setOpenRef(openRef === it.piece.ref ? null : it.piece.ref)} onSwap={() => setSwapFor(it)} canRemove={items.length > 2} />
         ))}
       </ul>
-      <div className="tabular flex items-baseline justify-between pt-2">
-        <span className="text-sm text-muted">Precio total ({buyCount} {buyCount === 1 ? 'prenda' : 'prendas'} por comprar)</span>
-        <span className="display text-3xl">{euro(outfit.total)}</span>
-      </div>
-      <div><Button variant="outline" size="sm" onClick={() => setAddOpen(true)}><Plus size={15} />Añadir una prenda o accesorio</Button></div>
+      <div><Button variant="ghost" size="sm" className="-ml-2" onClick={() => setAddOpen(true)}><Plus size={15} />Añadir una prenda o accesorio</Button></div>
       <SwapSheet outfit={outfit} target={swapFor} onClose={() => setSwapFor(null)} />
       <SwapSheet outfit={outfit} target={null} adding={addOpen} onClose={() => setAddOpen(false)} />
     </div>
@@ -152,7 +163,6 @@ function PieceRow({ outfit, item, open, onToggle, onSwap, canRemove }: { outfit:
       <button type="button" onClick={onToggle} aria-expanded={open} className="flex w-full items-center gap-3.5 py-3 text-left">
         <span className="block h-[76px] w-[76px] shrink-0 overflow-hidden rounded-sm bg-tile"><ProductThumb product={product} color={piece.color} className="h-full w-full" /></span>
         <span className="flex min-w-0 flex-1 flex-col gap-1">
-          <span className="text-2xs text-muted">{CATEGORY_LABEL[product.category]}</span>
           <span className="text-sm font-medium leading-snug">{product.name}</span>
           <span className="flex flex-wrap items-center gap-1.5 text-xs text-muted">
             {piece.own ? <Pill tone="accent">De tu armario</Pill> : <>{brand?.name}{product.demo && <DemoTag />}</>}
@@ -166,25 +176,17 @@ function PieceRow({ outfit, item, open, onToggle, onSwap, canRemove }: { outfit:
       </button>
       {open && (
         <div className="anim-fade flex flex-col gap-4 pb-5">
-          {!piece.own && (
-            <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-[13px] sm:grid-cols-4">
-              <div><dt className="text-2xs text-muted">Marca</dt><dd className="mt-0.5">{brand?.name}</dd></div>
-              <div><dt className="text-2xs text-muted">Tienda</dt><dd className="mt-0.5">{brand?.store}</dd></div>
-              <div><dt className="text-2xs text-muted">{product.demo ? 'Precio' : 'Precio visto'}</dt><dd className="tabular mt-0.5">{euro(product.price)} <span className="text-muted">{product.demo ? '(demo)' : `(${seenLabel(product.seenAt)})`}</span></dd></div>
-              <div><dt className="text-2xs text-muted">Disponibilidad</dt><dd className="mt-0.5"><Pill tone={AVAIL[product.availability].tone}>{AVAIL[product.availability].label}</Pill></dd></div>
-            </dl>
-          )}
-          {!piece.own && product.colors.length > 0 && (
+          {!piece.own && product.availability !== 'consultar' && product.availability !== 'disponible' && <p><Pill tone={AVAIL[product.availability].tone}>{AVAIL[product.availability].label}</Pill></p>}
+          {!piece.own && product.colors.length > 1 && (
             <div>
-              <p className="text-2xs text-muted">{product.demo ? 'Colores disponibles' : 'Colores (aproximados en el dibujo)'}: <span className="text-ink">{colorName(piece.color)}</span></p>
+              <p className="text-2xs text-muted">Color: <span className="text-ink">{colorName(piece.color)}</span></p>
               {product.colorNames && <p className="mt-1 text-xs">En la tienda: {product.colorNames.join(', ')}.</p>}
               <div className="mt-2 flex flex-wrap gap-2.5">
                 {product.colors.map((c) => <button key={c} type="button" onClick={() => setColor(c)} aria-label={`Ver en ${colorName(c)}`} aria-pressed={c === piece.color}><ColorDot color={c} size={24} ring={c === piece.color} /></button>)}
               </div>
             </div>
           )}
-          {!piece.own && !product.demo && product.sizes.length === 0 && product.category !== 'accessory' && <p className="text-xs text-muted">Tallas: consúltalas en la ficha de la tienda.</p>}
-          {!piece.own && product.sizes.length > 0 && (
+          {!piece.own && product.sizes.length > 0 && !rec?.chart && (
             <div>
               <p className="text-2xs text-muted">{product.demo ? 'Tallas disponibles' : 'Tallas del modelo (existencias al día: en la ficha)'}</p>
               <div className="mt-2 flex flex-wrap gap-1.5">
@@ -200,45 +202,48 @@ function PieceRow({ outfit, item, open, onToggle, onSwap, canRemove }: { outfit:
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
                 <h3 className="text-[15px] font-semibold">{rec.headline}</h3>
                 {(rec.status === 'ok' || rec.status === 'insufficient') && <Pill tone={confTone}>{CONFIDENCE_LABEL[rec.confidence]}</Pill>}
-                {rec.status !== 'onesize' && <Pill>Corte {FIT_LABEL[rec.fit].toLowerCase()}</Pill>}
               </div>
               <p className="mt-2 text-[13px] leading-relaxed">{rec.detail}</p>
               {product.garment && <RefWidth id={`ref-${piece.ref}`} />}
-              {rec.measures.length > 0 && rec.status === 'ok' && !product.garment && (
-                <table className="tabular mt-3 w-full text-left text-xs">
-                  <thead><tr className="text-muted"><th className="py-1 font-normal">Medida</th><th className="py-1 font-normal">Tú</th><th className="py-1 font-normal">Rango de la talla</th><th className="py-1 font-normal" /></tr></thead>
-                  <tbody>
-                    {rec.measures.map((m) => (
-                      <tr key={m.label} className="border-t border-line">
-                        <td className="py-1.5">{m.label}</td><td>{m.user == null ? <span className="text-muted">sin dato</span> : fmtLen(m.user, profile.units)}</td><td>{m.range} cm</td>
-                        <td className="text-right">{m.inRange == null ? <Pill>Sin comprobar</Pill> : m.inRange ? <Pill tone="ok">Encaja</Pill> : <Pill tone="warn">Fuera de rango</Pill>}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-              {rec.margins.map((m) => <p key={m.label} className="tabular mt-2 text-xs text-muted">Margen de ajuste: {m.label.toLowerCase()} de unos {m.cm} cm.</p>)}
-              {rec.alt && <p className="mt-2 text-[13px]"><strong>Alternativa, talla {rec.alt.size}.</strong> {rec.alt.why}</p>}
+              {rec.alt && <p className="mt-2 text-[13px]"><strong>O la {rec.alt.size}.</strong> {rec.alt.why}</p>}
               {rec.missing.length > 0 && (
                 <p className="mt-2 text-xs text-warn">Para afinar falta: {rec.missing.join(', ').toLowerCase()}. <button type="button" className="underline underline-offset-2" onClick={() => { useApp.getState().openOutfit(null); window.location.hash = 'perfil'; }}>Completar en Mi perfil</button></p>
               )}
               {rec.stockWarning && <p className="mt-2 text-xs text-warn">{rec.stockWarning}</p>}
-              {rec.brandNote && rec.status === 'ok' && <p className="mt-2 text-xs text-muted">Sobre la marca: {rec.brandNote}</p>}
-              {rec.chart && (
+              {(rec.chart || (rec.measures.length > 0 && rec.status === 'ok') || rec.margins.length > 0) && (
                 <div className="mt-3">
-                  <button type="button" onClick={() => setTable((v) => !v)} aria-expanded={table} className="inline-flex items-center gap-1 text-xs font-medium underline decoration-line underline-offset-4">{product.garment && rec.chart.title.startsWith('Medidas de la prenda') ? 'Medidas de la prenda' : 'Tabla de tallas de la marca'}<ChevronDown size={13} className={cx('transition-transform', table && 'rotate-180')} /></button>
+                  <button type="button" onClick={() => setTable((v) => !v)} aria-expanded={table} className="inline-flex items-center gap-1 text-xs font-medium underline decoration-line underline-offset-4">Ver detalles{rec.chart ? ' y tabla' : ''}<ChevronDown size={13} className={cx('transition-transform', table && 'rotate-180')} /></button>
                   {table && (
-                    <div className="anim-fade mt-2 overflow-x-auto">
-                      <p className="mb-1.5 flex flex-wrap items-center gap-2 text-2xs text-muted">{rec.chart.title} {product.demo ? <DemoTag label="Tabla de ejemplo" /> : rec.chart.sourceUrl && <a href={rec.chart.sourceUrl} target="_blank" rel="noreferrer" className="underline underline-offset-2">{product.garment && !chartOfficialBody(rec) ? 'Fuente: ficha de la tienda' : 'Fuente: guía oficial'}</a>}</p>
-                      {rec.chart.note && <p className="mb-1.5 text-2xs text-muted">{rec.chart.note}</p>}
-                      <table className="tabular w-full min-w-[320px] text-left text-xs">
-                        <thead><tr className="text-muted"><th className="py-1 pr-3 font-normal">Talla</th>{rec.chart.columns.map((c) => <th key={c} className="py-1 pr-3 font-normal">{c}</th>)}</tr></thead>
-                        <tbody>{rec.chart.rows.map((r) => (
-                          <tr key={r.size} className={cx('border-t border-line', r.recommended && 'bg-accent-soft font-medium')}>
-                            <td className="py-1.5 pl-1 pr-3">{r.size}{!r.inStock && product.demo && <span className="font-normal text-muted"> (agotada)</span>}</td>{r.cells.map((c, i) => <td key={i} className="pr-3">{c}</td>)}
-                          </tr>
-                        ))}</tbody>
-                      </table>
+                    <div className="anim-fade mt-3 flex flex-col gap-3">
+                      {rec.status !== 'onesize' && <p className="text-xs text-muted">Corte {FIT_LABEL[rec.fit].toLowerCase()}.{rec.brandNote && rec.status === 'ok' ? ` ${rec.brandNote}` : ''}</p>}
+                      {rec.measures.length > 0 && rec.status === 'ok' && !product.garment && (
+                        <table className="tabular w-full text-left text-xs">
+                          <thead><tr className="text-muted"><th className="py-1 font-normal">Medida</th><th className="py-1 font-normal">Tú</th><th className="py-1 font-normal">Rango de la talla</th><th className="py-1 font-normal" /></tr></thead>
+                          <tbody>
+                            {rec.measures.map((m) => (
+                              <tr key={m.label} className="border-t border-line">
+                                <td className="py-1.5">{m.label}</td><td>{m.user == null ? <span className="text-muted">sin dato</span> : fmtLen(m.user, profile.units)}</td><td>{m.range} cm</td>
+                                <td className="text-right">{m.inRange == null ? <Pill>Sin comprobar</Pill> : m.inRange ? <Pill tone="ok">Encaja</Pill> : <Pill tone="warn">Fuera de rango</Pill>}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      )}
+                      {rec.margins.map((m) => <p key={m.label} className="tabular text-xs text-muted">Margen de ajuste: {m.label.toLowerCase()} de unos {m.cm} cm.</p>)}
+                      {rec.chart && (
+                        <div className="overflow-x-auto">
+                          <p className="mb-1.5 flex flex-wrap items-center gap-2 text-2xs text-muted">{rec.chart.title} {product.demo ? <DemoTag label="Tabla de ejemplo" /> : rec.chart.sourceUrl && <a href={rec.chart.sourceUrl} target="_blank" rel="noreferrer" className="underline underline-offset-2">{product.garment && !chartOfficialBody(rec) ? 'Fuente: ficha de la tienda' : 'Fuente: guía oficial'}</a>}</p>
+                          {rec.chart.note && <p className="mb-1.5 text-2xs text-muted">{rec.chart.note}</p>}
+                          <table className="tabular w-full min-w-[320px] text-left text-xs">
+                            <thead><tr className="text-muted"><th className="py-1 pr-3 font-normal">Talla</th>{rec.chart.columns.map((c) => <th key={c} className="py-1 pr-3 font-normal">{c}</th>)}</tr></thead>
+                            <tbody>{rec.chart.rows.map((r) => (
+                              <tr key={r.size} className={cx('border-t border-line', r.recommended && 'bg-accent-soft font-medium')}>
+                                <td className="py-1.5 pl-1 pr-3">{r.size}{!r.inStock && product.demo && <span className="font-normal text-muted"> (agotada)</span>}</td>{r.cells.map((c, i) => <td key={i} className="pr-3">{c}</td>)}
+                              </tr>
+                            ))}</tbody>
+                          </table>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

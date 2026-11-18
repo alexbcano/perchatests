@@ -28,16 +28,14 @@ export function OutfitCard({ outfit, size = 'md' }: { outfit: Outfit; size?: 'sm
         <ConceptTag photos={hasPhotos} className="absolute bottom-2 left-2" />
       </button>
       <div className="absolute right-2 top-2 flex flex-col gap-1.5">
-        <IconButton label={saved ? 'Quitar de favoritos' : 'Guardar look'} active={saved} onClick={() => toggleSaveOutfit(outfit)}><Heart size={17} fill={saved ? 'currentColor' : 'none'} /></IconButton>
-        <IconButton label={comparing ? 'Quitar de la comparación' : 'Añadir a la comparación'} active={comparing} onClick={() => toggleCompare(outfit)}><Columns2 size={17} /></IconButton>
+        <IconButton label={saved ? 'Quitar de guardados' : 'Guardar look'} active={saved} onClick={() => toggleSaveOutfit(outfit)}><Heart size={17} fill={saved ? 'currentColor' : 'none'} /></IconButton>
+        {comparing && <IconButton label="Quitar de la comparación" active onClick={() => toggleCompare(outfit)}><Columns2 size={17} /></IconButton>}
       </div>
       <button type="button" onClick={() => openOutfit(outfit)} className="mt-3 flex flex-col items-start gap-0.5 text-left">
-        <span className="text-2xs text-muted">{styleName(outfit.style)}</span>
         <span className={cx('display leading-tight', size === 'sm' ? 'text-lg' : 'text-[1.4rem]')}>{outfit.name}</span>
-        <span className="tabular mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px]">
-          <span className="font-medium">{outfit.total ? euro(outfit.total) : 'Sin compras'}</span>
-          <Pill tone={outfit.compat >= 85 ? 'ok' : outfit.compat >= 70 ? 'neutral' : 'warn'}>{outfit.compat} % afín</Pill>
-          {outfit.fromWardrobe > 0 && <Pill tone="accent"><Shirt size={11} />{outfit.fromWardrobe} tuya{outfit.fromWardrobe > 1 ? 's' : ''}</Pill>}
+        <span className="tabular flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-muted">
+          <span>{outfit.total ? euro(outfit.total) : 'Sin compras'}</span>
+          {outfit.fromWardrobe > 0 && <span className="inline-flex items-center gap-1"><Shirt size={12} />{outfit.fromWardrobe} tuya{outfit.fromWardrobe > 1 ? 's' : ''}</span>}
         </span>
       </button>
     </article>

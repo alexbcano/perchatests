@@ -35,8 +35,8 @@ export function Saved() {
 
   return (
     <div>
-      <PageHeader title="Favoritos" lead="Tus looks y prendas guardados, tus colecciones y las búsquedas anteriores." />
-      <Segmented label="Sección de favoritos" value={tab} onChange={(t) => { setTab(t); setOpenCol(null); }} options={[
+      <PageHeader title="Guardados" />
+      <Segmented label="Sección de guardados" value={tab} onChange={(t) => { setTab(t); setOpenCol(null); }} options={[
         { value: 'looks', label: `Looks (${saved.outfits.length})` }, { value: 'prendas', label: `Prendas (${products.length})` },
         { value: 'colecciones', label: `Colecciones (${saved.collections.length})` }, { value: 'busquedas', label: `Búsquedas (${saved.history.length})` },
       ]} />
@@ -67,7 +67,7 @@ export function Saved() {
               <Button type="submit" disabled={!newName.trim()}><FolderPlus size={16} />Crear</Button>
             </form>
             {saved.collections.length === 0
-              ? <Empty title="Organiza tus favoritos" body="Agrupa looks y prendas por viaje, temporada u ocasión. Por ejemplo: «Boda de junio» u «Oficina otoño»." />
+              ? <Empty title="Organiza lo que guardas" body="Agrupa looks y prendas por viaje, temporada u ocasión. Por ejemplo: «Boda de junio» u «Oficina otoño»." />
               : (
                 <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                   {saved.collections.map((c) => {
@@ -129,7 +129,7 @@ export function Saved() {
       <ProductSheet product={product} onClose={() => setProduct(null)} onCollect={(id) => { setProduct(null); setCollectFor(id); }} />
       <CollectionSheet open={!!collectFor} onClose={() => setCollectFor(null)} productId={collectFor ?? undefined} />
       <RenameSheet value={rename} onClose={() => setRename(null)} />
-      <Confirm open={!!delCol} title="Eliminar colección" body={`Se eliminará «${delCol?.name}». Los looks y prendas siguen en tus favoritos.`} action="Eliminar" onClose={() => setDelCol(null)}
+      <Confirm open={!!delCol} title="Eliminar colección" body={`Se eliminará «${delCol?.name}». Los looks y prendas siguen guardados.`} action="Eliminar" onClose={() => setDelCol(null)}
         onConfirm={() => { patch('saved', (cur) => ({ ...cur, collections: cur.collections.filter((c) => c.id !== delCol!.id) })); notify('Colección eliminada'); }} />
       <Confirm open={clearHist} title="Borrar historial" body="Se borrarán todas las búsquedas anteriores." action="Borrar historial" onClose={() => setClearHist(false)}
         onConfirm={() => { patch('saved', (cur) => ({ ...cur, history: [] })); notify('Historial borrado'); }} />
