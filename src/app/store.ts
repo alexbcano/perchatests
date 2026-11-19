@@ -27,7 +27,7 @@ const EXAMPLE_MEASURES: Measurements = { height: 176, weight: 72, chest: 96, wai
 export const EMPTY_MEASURES: Measurements = { height: null, weight: null, chest: null, waist: null, hip: null, shoulders: null, leg: null, inseam: null, arm: null, neck: null, footLength: null, shoeEU: null };
 
 const defaults = {
-  profile: (): Profile => ({ isExample: true, name: '', age: null, pattern: 'neutro', country: 'España', units: 'metric', fitPreference: 'normal', measures: EXAMPLE_MEASURES, photos: [], consentTraining: false }),
+  profile: (): Profile => ({ isExample: true, name: '', age: null, pattern: 'masculino', country: 'España', units: 'metric', fitPreference: 'normal', measures: EXAMPLE_MEASURES, photos: [], consentTraining: false }),
   prefs: (): PrefsSlice => ({ prefs: { styles: ['casual', 'minimal'], season: currentSeason(), occasion: 'diario', budget: 250, favColors: [], avoidColors: [], likeTypes: [], avoidTypes: [], boldness: 3, brands: [], market: 'ES' }, theme: 'light', catalogMode: 'real' }),
   wardrobe: (): WardrobeItem[] => WARDROBE_SEED,
   saved: (): Saved => ({ outfits: [], productIds: [], collections: [], history: [], follows: REAL_REFERENTS.filter((r) => r.id.startsWith('y')).map((r) => r.id), referents: REAL_REFERENTS }),

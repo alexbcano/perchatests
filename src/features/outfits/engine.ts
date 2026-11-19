@@ -76,7 +76,7 @@ export function effectiveRequest(req: GenRequest, referents: Referent[]): { eff:
 
 interface Env {
   eff: GenRequest; hints: TextHints; refStyles: StyleKey[];
-  formalityShift: number; boldTarget: number; budget: number;
+  formalityShift: number; boldTarget: number; budget: number; priceBias?: number;
   /** amplitud de exploración al elegir piezas: sube si la primera pasada da pocas combinaciones */
   spread: number;
 }
@@ -307,7 +307,8 @@ function reasonsFor(items: Cand[], style: StyleKey, env: { eff: GenRequest; hint
 function assemble(style: StyleKey, cands: Cand[], env: Env, rnd: () => number, locked: Cand[]): Cand[] | null {
   const by = (cat: Category) => cands.filter((c) => c.p.category === cat);
   const lockedIn = (cat: Category) => locked.find((l) => l.p.category === cat);
-  const base = (c: Cand) => scorePiece(c, style, env);
+  // En la pasada «barata» cada euro resta un poco de puntuación, para que salgan prendas más económicas.
+  const base = (c: Cand) => scorePiece(c, style, env) - (env.priceBias && !c.own ? (env.priceBias * c.p.price) / 100 : 0);
   const ft = formalityTarget(style, env.eff.occasion, env.formalityShift);
 
   const bottom = lockedIn('bottom') ?? pick(by('bottom'), base, rnd, env.spread);
@@ -360,14 +361,18 @@ function assemble(style: StyleKey, cands: Cand[], env: Env, rnd: () => number, l
       if (acc) { items.splice(items.indexOf(acc), 1); continue; }
       const swappable = items.filter((i) => !i.own && !isLocked(i)).sort((a, b) => b.p.price - a.p.price);
       let swapped = false;
-      for (const target of swappable) {
-        const others = items.filter((i) => i !== target);
-        const best = base(target);
-        const cheaper = by(target.p.category)
-          .filter((c) => (c.own || c.p.price < target.p.price) && !items.some((i) => i.p.id === c.p.id) && base(c) >= best - 1.1)
-          .map((c) => ({ c, s: base(c) + harmony([...others.filter((o) => o.p.category !== 'accessory').map((o) => o.color), c.color]) * 0.6 - (target.p.category === 'layer' && top ? layerClash(c.p, top.p) : 0) }))
-          .sort((a, b) => b.s - a.s)[0];
-        if (cheaper) { items[items.indexOf(target)] = cheaper.c; swapped = true; break; }
+      // Primero se busca una prenda más barata casi igual de buena; si no hay, se acepta algo más de distancia.
+      for (const margin of [1.1, 2.6]) {
+        for (const target of swappable) {
+          const others = items.filter((i) => i !== target);
+          const best = base(target);
+          const cheaper = by(target.p.category)
+            .filter((c) => (c.own || c.p.price < target.p.price) && !items.some((i) => i.p.id === c.p.id) && base(c) >= best - margin)
+            .map((c) => ({ c, s: base(c) + harmony([...others.filter((o) => o.p.category !== 'accessory').map((o) => o.color), c.color]) * 0.6 - (target.p.category === 'layer' && top ? layerClash(c.p, top.p) : 0) }))
+            .sort((a, b) => b.s - a.s)[0];
+          if (cheaper) { items[items.indexOf(target)] = cheaper.c; swapped = true; break; }
+        }
+        if (swapped) break;
       }
       if (swapped) continue;
       const layer = items.find((i) => i.p.category === 'layer' && !i.own && !isLocked(i));
@@ -427,11 +432,16 @@ export function generateOutfits(req: GenRequest, ctx: EngineCtx): GenResult {
   const seenDrafts = new Set<string>();
   const attempts = Math.max(30, eff.count * 12);
   const distinctOk = () => drafts.filter((d) => !env.budget || d.ev.total <= env.budget).length;
-  for (let k = 0; k < attempts * 3; k++) {
+  for (let k = 0; k < attempts * 4; k++) {
     // Segunda y tercera pasada solo si faltan combinaciones: se abre el abanico de piezas candidatas.
     if (k === attempts || k === attempts * 2) {
       if (distinctOk() >= eff.count * 2) break;
       env.spread = k === attempts ? 0.8 : 1.3;
+    }
+    // Cuarta pasada: si aún faltan looks dentro del presupuesto, se priorizan las prendas baratas.
+    if (k === attempts * 3) {
+      if (!env.budget || distinctOk() >= eff.count) break;
+      env.priceBias = 1.6; env.spread = 1;
     }
     const style = eff.styles[k % eff.styles.length];
     const items = assemble(style, cands, env, rnd, locked);
@@ -458,17 +468,21 @@ export function generateOutfits(req: GenRequest, ctx: EngineCtx): GenResult {
     return { outfits: [], notes, hints, effective: eff };
   }
 
-  const within = drafts.filter((d) => !env.budget || d.ev.total <= env.budget);
-  let ranked = (within.length >= Math.min(3, eff.count) ? within : drafts).sort((a, b) => b.ev.compat - a.ev.compat);
+  const within = drafts.filter((d) => !env.budget || d.ev.total <= env.budget).sort((a, b) => b.ev.compat - a.ev.compat);
+  // Lo que cabe en el presupuesto va primero; si no llega, se completa con lo más barato (lo más cercano al presupuesto).
+  const over = drafts.filter((d) => !within.includes(d)).sort((a, b) => a.ev.total - b.ev.total || b.ev.compat - a.ev.compat);
+  let ranked = within.length >= Math.min(3, eff.count) ? within : [...within, ...over];
   if (env.budget && within.length < Math.min(3, eff.count)) {
     const cheapest = Math.min(...drafts.map((d) => d.ev.total));
     notes.push(`Con ${euro(env.budget)} no salen suficientes looks completos para ${seasonLabel(eff.season).toLowerCase()} en este estilo. El más barato posible cuesta ${euro(cheapest)}; te mostramos los más cercanos.`);
   }
-  if (eff.tweak === 'cheaper') ranked = ranked.sort((a, b) => a.ev.total - b.ev.total || b.ev.compat - a.ev.compat);
+  if (eff.tweak === 'cheaper') ranked = [...ranked].sort((a, b) => a.ev.total - b.ev.total || b.ev.compat - a.ev.compat);
 
   const coreKey = (d: { items: Cand[] }) => d.items.filter((i) => i.p.category !== 'accessory').map((i) => i.p.id);
   const chosen: typeof drafts = [];
-  for (const maxShared of [1, 2, 3]) {
+  const short = !!env.budget && within.length < Math.min(3, eff.count);
+  // Si el presupuesto no da, se aceptan looks que compartan alguna prenda antes que irse a otros más caros.
+  for (const maxShared of short ? [2, 3] : [1, 2, 3]) {
     // primera vuelta: un look por estilo seleccionado
     for (const d of ranked) {
       if (chosen.length >= eff.count) break;
@@ -483,6 +497,10 @@ export function generateOutfits(req: GenRequest, ctx: EngineCtx): GenResult {
     }
     if (chosen.length >= eff.count) break;
   }
+  if (env.budget) chosen.sort((a, b) => {
+    const ia = a.ev.total <= env.budget, ib = b.ev.total <= env.budget;
+    return ia !== ib ? (ia ? -1 : 1) : ia ? b.ev.compat - a.ev.compat : a.ev.total - b.ev.total;
+  });
   if (chosen.length < eff.count && eff.source === 'wardrobe') notes.push(`Tu armario da para ${chosen.length} ${chosen.length === 1 ? 'combinación distinta' : 'combinaciones distintas'} esta temporada.`);
 
   // Evita repetir el mismo accesorio en varios looks de la misma tanda.

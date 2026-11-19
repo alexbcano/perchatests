@@ -90,7 +90,7 @@ export function Segmented<T extends string>({ value, onChange, options, label, s
     <div role="tablist" aria-label={label} className="inline-flex max-w-full overflow-x-auto no-scrollbar rounded-full bg-tile p-1">
       {options.map((o) => (
         <button key={o.value} role="tab" type="button" aria-selected={value === o.value} onClick={() => onChange(o.value)}
-          className={cx('rounded-full px-4 font-medium transition-colors whitespace-nowrap', size === 'sm' ? 'h-8 text-xs' : 'h-9 text-[13px]', value === o.value ? 'bg-surface text-ink shadow-sm' : 'text-muted hover:text-ink')}>
+          className={cx('rounded-full px-4 font-medium transition-colors whitespace-nowrap', size === 'sm' ? 'h-8 text-xs' : 'h-9 text-[13px]', value === o.value ? 'bg-ink text-paper' : 'text-muted hover:text-ink')}>
           {o.label}
         </button>
       ))}

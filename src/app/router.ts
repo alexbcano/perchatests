@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { useApp } from './store';
 import type { GenRequest } from '@/domain/types';
 
-export type Route = 'inicio' | 'crear' | 'tendencias' | 'armario' | 'favoritos' | 'perfil';
-export const ROUTES: Route[] = ['inicio', 'crear', 'tendencias', 'armario', 'favoritos', 'perfil'];
+export type Route = 'inicio' | 'crear' | 'tendencias' | 'referentes' | 'armario' | 'favoritos' | 'perfil';
+export const ROUTES: Route[] = ['inicio', 'crear', 'tendencias', 'referentes', 'armario', 'favoritos', 'perfil'];
 
 const read = () => window.location.hash.replace(/^#/, '');
 export const parseRoute = (h: string): Route => (ROUTES.includes(h as Route) ? (h as Route) : 'inicio');

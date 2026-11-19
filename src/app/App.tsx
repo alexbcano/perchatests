@@ -20,11 +20,14 @@ const NAV: { route: Route; label: string; short: string; icon: typeof House }[] 
   { route: 'perfil', label: 'Mi perfil', short: 'Perfil', icon: UserRound },
 ];
 
-const PAGES: Record<Route, () => JSX.Element> = { inicio: Home, crear: Create, tendencias: Trends, armario: Wardrobe, favoritos: Saved, perfil: Profile };
+const Referents = () => <Trends initial="referentes" />;
+const PAGES: Record<Route, () => JSX.Element> = { inicio: Home, crear: Create, tendencias: Trends, referentes: Referents, armario: Wardrobe, favoritos: Saved, perfil: Profile };
 
 export function App() {
   const hash = useHash();
   const route = parseRoute(hash);
+  // Estilos y referentes se abren desde Crear: en el menú se marca Crear.
+  const navRoute = route === 'tendencias' || route === 'referentes' ? 'crear' : route;
   const open = useApp((s) => s.open);
   const onboarding = useApp((s) => s.onboarding);
   const toast = useApp((s) => s.toast);
@@ -67,8 +70,8 @@ export function App() {
         </button>
         <nav aria-label="Secciones" className="mt-10 flex flex-col gap-1">
           {NAV.map(({ route: r, label, icon: Icon }) => (
-            <button key={r} type="button" onClick={() => go(r)} aria-current={route === r ? 'page' : undefined}
-              className={cx('flex h-11 items-center gap-3 rounded-sm px-3 text-sm transition-colors', route === r ? 'bg-ink font-medium text-paper' : 'text-ink hover:bg-tile')}>
+            <button key={r} type="button" onClick={() => go(r)} aria-current={navRoute === r ? 'page' : undefined}
+              className={cx('flex h-11 items-center gap-3 rounded-sm px-3 text-sm transition-colors', navRoute === r ? 'bg-ink font-medium text-paper' : 'text-ink hover:bg-tile')}>
               <Icon size={18} strokeWidth={1.75} />{label}
             </button>
           ))}
@@ -100,10 +103,10 @@ export function App() {
 
       <nav aria-label="Secciones" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t border-line bg-paper/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
         {NAV.map(({ route: r, short, icon: Icon }) => (
-          <button key={r} type="button" onClick={() => go(r)} aria-current={route === r ? 'page' : undefined}
-            className={cx('relative flex h-[60px] flex-col items-center justify-center gap-1 text-[12px]', route === r ? 'font-extrabold text-ink' : 'font-medium text-muted')}>
-            {route === r && <span aria-hidden="true" className="absolute inset-x-3 -top-px h-[3px] bg-ink" />}
-            <Icon size={21} strokeWidth={route === r ? 2.4 : 1.7} />{short}
+          <button key={r} type="button" onClick={() => go(r)} aria-current={navRoute === r ? 'page' : undefined}
+            className={cx('relative flex h-[60px] flex-col items-center justify-center gap-1 text-[12px]', navRoute === r ? 'font-extrabold text-ink' : 'font-medium text-muted')}>
+            {navRoute === r && <span aria-hidden="true" className="absolute inset-x-3 -top-px h-[3px] bg-ink" />}
+            <Icon size={21} strokeWidth={navRoute === r ? 2.4 : 1.7} />{short}
           </button>
         ))}
       </nav>

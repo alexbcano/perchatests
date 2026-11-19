@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Heart, Pencil, Plus, Trash2, RotateCcw } from 'lucide-react';
+import { Heart, Pencil, Plus, Trash2, RotateCcw, SlidersHorizontal } from 'lucide-react';
 import type { Referent, StyleInfo, StyleKey } from '@/domain/types';
 import { baseRequest, uid, useApp } from '@/app/store';
 import { createWith } from '@/app/router';
@@ -16,13 +16,14 @@ import { COUNTRIES } from '@/ui/forms';
 
 const CONTENT: Referent['content'][] = ['Vídeo corto', 'Vídeo largo', 'Fotografía', 'Blog'];
 
-export function Trends() {
+export function Trends({ initial = 'estilos' }: { initial?: 'estilos' | 'referentes' } = {}) {
   const prefs = useApp((s) => s.prefsSlice.prefs);
   const profile = useApp((s) => s.profile);
   const referents = useApp((s) => s.saved.referents);
   const follows = useApp((s) => s.saved.follows);
   const { patch, notify } = useApp.getState();
-  const [tab, setTab] = useState<'estilos' | 'referentes'>('estilos');
+  const [tab, setTab] = useState<'estilos' | 'referentes'>(initial);
+  const [showFilters, setShowFilters] = useState(false);
   const [styleOpen, setStyleOpen] = useState<StyleInfo | null>(null);
   const [f, setF] = useState({ country: '', style: '', content: '', lang: 'all', onlyMine: false });
   const [editing, setEditing] = useState(false);
@@ -76,10 +77,14 @@ export function Trends() {
           <Notice>
             {referents.some((r) => r.demo)
               ? <>Los perfiles marcados como «Perfil demo» <strong>no son personas reales</strong>.</>
-              : <>Creadores reales tomados de listas públicas; cada uno enlaza su <strong>fuente</strong>. Los estilos asociados son una clasificación orientativa de Percha.</>}{' '}
-            Sirven de inspiración: Percha nunca afirma que alguien recomiende un producto. Edita la lista con «Editar fuente».
+              : <>Creadores reales, cada uno con enlace a su fuente.</>}{' '}
+            Son inspiración: Percha nunca dice que recomienden un producto.
           </Notice>
-          <div className="flex flex-wrap items-end gap-3">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-[13px] text-muted">{list.length} de {referents.length} referentes</p>
+            <Button size="sm" variant={filtersOn ? 'primary' : 'outline'} aria-expanded={showFilters} onClick={() => setShowFilters((v) => !v)}><SlidersHorizontal size={14} />Filtrar{filtersOn ? ' (activo)' : ''}</Button>
+          </div>
+          {showFilters && <div className="anim-fade flex flex-wrap items-end gap-3">
             <Field id="f-country" label="País"><select id="f-country" className={cx(inputCls, 'h-10 w-40')} value={f.country} onChange={(e) => setF({ ...f, country: e.target.value })}><option value="">Todos</option>{countries.map((c) => <option key={c}>{c}</option>)}</select></Field>
             <Field id="f-style" label="Estilo"><select id="f-style" className={cx(inputCls, 'h-10 w-44')} value={f.style} onChange={(e) => setF({ ...f, style: e.target.value })}><option value="">Todos</option>{STYLES.map((s) => <option key={s.key} value={s.key}>{s.name}</option>)}</select></Field>
             <Field id="f-content" label="Tipo de contenido"><select id="f-content" className={cx(inputCls, 'h-10 w-40')} value={f.content} onChange={(e) => setF({ ...f, content: e.target.value })}><option value="">Todos</option>{CONTENT.map((c) => <option key={c}>{c}</option>)}</select></Field>
@@ -89,7 +94,7 @@ export function Trends() {
               {filtersOn && <Button size="sm" variant="ghost" onClick={() => setF({ country: '', style: '', content: '', lang: 'all', onlyMine: false })}>Quitar filtros</Button>}
               <Button size="sm" variant={editing ? 'primary' : 'outline'} onClick={() => setEditing((v) => !v)}><Pencil size={14} />{editing ? 'Terminar edición' : 'Editar fuente'}</Button>
             </div>
-          </div>
+          </div>}
           {editing && (
             <div className="flex flex-wrap items-center gap-2 rounded-sm bg-surface p-3">
               <span className="mr-auto text-[13px] text-muted">Fuente editable: {referents.length} referentes guardados en tus datos.</span>
@@ -97,7 +102,6 @@ export function Trends() {
               <Button size="sm" variant="outline" onClick={() => { patch('saved', (cur) => ({ ...cur, referents: REFERENTS, follows: cur.follows.filter((id) => REFERENTS.some((r) => r.id === id)) })); notify('Lista inicial restaurada'); }}><RotateCcw size={14} />Restaurar lista inicial</Button>
             </div>
           )}
-          <p className="text-[13px] text-muted">{list.length} de {referents.length} referentes</p>
           {list.length === 0 && <Empty title="Ningún referente con estos filtros" body="Quita algún filtro o añade tus propios referentes desde «Editar fuente»." />}
           <ul className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
             {list.map((r) => {
@@ -106,7 +110,7 @@ export function Trends() {
               return (
                 <li key={r.id} className="flex flex-col gap-3 rounded-sm bg-surface p-5">
                   <div className="flex items-start gap-3">
-                    <span className="display flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-xl italic" style={{ background: tint, color: luminance(tint) > 0.55 ? '#14182b' : '#fff' }} aria-hidden>{r.name.charAt(0)}</span>
+                    <span className="display flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-xl" style={{ background: tint, color: luminance(tint) > 0.55 ? '#14182b' : '#fff' }} aria-hidden>{r.name.charAt(0)}</span>
                     <div className="min-w-0 flex-1">
                       <h3 className="flex flex-wrap items-center gap-2 text-[15px] font-semibold leading-tight">{r.name}{r.demo ? <DemoTag label="Perfil demo" /> : r.custom && <Pill tone="accent">Añadido por ti</Pill>}</h3>
                       <p className="mt-0.5 text-xs text-muted">{[r.handle, r.country, r.content, r.language === 'es' ? 'Español' : 'English'].filter(Boolean).join(', ')}</p>

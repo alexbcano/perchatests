@@ -64,7 +64,7 @@ export function Create() {
 
           {followed.length > 0 && (
             <div className="flex flex-col gap-2">
-              <span className="flex items-baseline justify-between text-[13px] font-medium">Inspírate en<button type="button" onClick={() => go('tendencias')} className="text-xs font-normal text-muted underline underline-offset-4">Ver referentes</button></span>
+              <span className="flex items-baseline justify-between text-[13px] font-medium">Inspírate en<button type="button" onClick={() => go('referentes')} className="text-xs font-normal text-muted underline underline-offset-4">Ver referentes</button></span>
               <div className="no-scrollbar -mx-6 flex gap-2 overflow-x-auto px-6 xl:mx-0 xl:flex-wrap xl:px-0 [&>*]:shrink-0 [&>*]:whitespace-nowrap">{followed.map((r) => { const on = form.referentIds.includes(r.id); return <Chip key={r.id} selected={on} onClick={() => set({ referentIds: on ? form.referentIds.filter((x) => x !== r.id) : [...form.referentIds, r.id] })}>{r.name}</Chip>; })}</div>
             </div>
           )}

@@ -37,13 +37,13 @@ export function Saved() {
     <div>
       <PageHeader title="Guardados" />
       <Segmented label="Sección de guardados" value={tab} onChange={(t) => { setTab(t); setOpenCol(null); }} options={[
-        { value: 'looks', label: `Looks (${saved.outfits.length})` }, { value: 'prendas', label: `Prendas (${products.length})` },
-        { value: 'colecciones', label: `Colecciones (${saved.collections.length})` }, { value: 'busquedas', label: `Búsquedas (${saved.history.length})` },
+        { value: 'looks', label: withCount('Looks', saved.outfits.length) }, { value: 'prendas', label: withCount('Prendas', products.length) },
+        { value: 'colecciones', label: withCount('Colecciones', saved.collections.length) }, { value: 'busquedas', label: 'Historial' },
       ]} />
 
       <div className="mt-6">
         {tab === 'looks' && (saved.outfits.length === 0
-          ? <Empty title="Aún no has guardado ningún look" body="Pulsa el corazón de cualquier propuesta para tenerla aquí. Con el icono de columnas puedes comparar hasta tres." action={<Button onClick={() => go('crear')}>Crear un outfit</Button>} />
+          ? <Empty title="Aún no has guardado ningún look" body="Pulsa el corazón de cualquier propuesta para tenerla aquí. Desde «Más acciones» en un look puedes compararlo con otros." action={<Button onClick={() => go('crear')}>Crear un outfit</Button>} />
           : (
             <div className="flex flex-col gap-4">
               {saved.outfits.length >= 2 && compare.length === 0 && <div><Button size="sm" variant="outline" onClick={() => saved.outfits.slice(0, 2).forEach((o) => toggleCompare(o))}>Comparar los dos más recientes</Button></div>}
@@ -235,3 +235,6 @@ export function CompareBar() {
     </>
   );
 }
+
+/** El número solo se enseña cuando hay algo, para que las pestañas quepan en el móvil. */
+const withCount = (label: string, n: number) => (n ? `${label} (${n})` : label);

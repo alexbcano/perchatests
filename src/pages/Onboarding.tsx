@@ -34,7 +34,7 @@ export function Onboarding() {
     <div ref={scroller} className="anim-fade fixed inset-0 z-50 overflow-y-auto bg-paper">
       <div className="mx-auto flex min-h-full max-w-3xl flex-col px-4 pb-28 pt-4 sm:px-8">
         <div className="flex items-center justify-between">
-          <span className="display text-2xl italic">Percha</span>
+          <span className="display text-2xl">percha</span>
           <IconButton label="Salir sin guardar" onClick={close} className="bg-transparent"><X size={19} /></IconButton>
         </div>
         <ol className="mt-5 flex gap-1.5" aria-label="Pasos">

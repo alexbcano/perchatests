@@ -521,7 +521,7 @@ function ShareSheet({ open, onClose, outfit }: { open: boolean; onClose: () => v
       g.drawImage(img, 0, 0, 900, 1200);
       URL.revokeObjectURL(url);
       g.fillStyle = '#14182b';
-      g.font = 'italic 64px "Bodoni Moda", Didot, Georgia, serif'; g.fillText(outfit.name, 48, 1300);
+      g.font = '900 64px Archivo, "Helvetica Neue", Arial, sans-serif'; g.fillText(outfit.name, 48, 1300);
       g.font = '28px "Instrument Sans", Arial, sans-serif'; g.fillText(`${styleName(outfit.style)}, ${outfit.pieces.length} prendas, ${euro(outfit.total)}`, 48, 1356);
       g.fillStyle = '#5d6279'; g.font = '22px "Instrument Sans", Arial, sans-serif';
       g.fillText(outfit.pieces.some((p) => catalog.get(p.ref)?.demo) ? 'Ilustración conceptual. Productos y precios de demostración. Percha.' : `Ilustración conceptual. Precios vistos el ${seenLabel(catalog.seenAt)}. Percha.`, 48, 1440);
