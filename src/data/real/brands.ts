@@ -16,6 +16,9 @@ export const REAL_BRANDS: Brand[] = [
   { id: 'milfshakes', name: 'Milfshakes', demo: false, blurb: 'Streetwear español de sudaderas y camisetas gráficas.', sizingNote: 'Solo publica medidas de la prenda en plano en cada ficha, no del cuerpo: míralas en la tienda.', store: 'milfshakes.es', url: 'https://milfshakes.es', markets: ['ES', 'UE'] },
   { id: 'scuffers', name: 'Scuffers', demo: false, blurb: 'Sudaderas boxy de algodón grueso, de Madrid.', sizingNote: 'Solo publica medidas de la prenda en plano: compárala con una sudadera tuya.', store: 'scuffers.com', url: 'https://scuffers.com', markets: ['ES', 'UE'] },
   { id: 'uo', name: 'Urban Outfitters', demo: false, blurb: 'Streetwear y marcas propias (BDG, iets frans…).', sizingNote: 'Guía general de la tienda; en sus marcas baggy la prenda ya viene holgada.', store: 'urbanoutfitters.com', url: 'https://www.urbanoutfitters.com/es-es/mens-clothing', markets: ['ES', 'UE'] },
+  { id: 'jackjones', name: 'Jack & Jones Plus Size', demo: false, blurb: 'Básicos, vaqueros y sudaderas en tallas grandes (hasta 8XL y 56).', sizingNote: 'Guía Plus Size oficial; da un valor por talla y repartimos el rango entre tallas. Mira en la ficha qué tallas quedan.', store: 'jackjones.com', url: 'https://www.jackjones.com/es-es/tallas-grandes', markets: ['ES', 'UE'] },
+  { id: 'adidas', name: 'adidas', demo: false, blurb: 'Sudaderas y chándal; ropa hasta 3XL (algunas hasta 4XL).', sizingNote: 'Guía oficial de adidas.es. Mira en la ficha si queda tu talla.', store: 'adidas.es', url: 'https://www.adidas.es/hombre-ropa', markets: ['ES', 'UE'] },
+  { id: 'kiabi', name: 'Kiabi', demo: false, blurb: 'Tallas grandes de hombre hasta 7XL y 72, a buen precio.', sizingNote: 'Guía oficial de tallas grandes (3XL–7XL y 54–72). Mira en la ficha si queda tu talla.', store: 'kiabi.es', url: 'https://www.kiabi.es/v/tallas-grandes-hombre', markets: ['ES'] },
   { id: 'dutti', name: 'Massimo Dutti', demo: false, blurb: 'Sastrería y clásicos.', sizingNote: 'No hemos podido leer su guía de tallas: consúltala en la ficha del producto.', store: 'massimodutti.com', markets: ['ES', 'UE'] },
 ];
 
@@ -77,6 +80,7 @@ REAL_CHARTS.push(
     rows: [
       { size: 'XS', chest: [81.3, 86.4], waist: [66, 71.1] }, { size: 'S', chest: [88.9, 94], waist: [73.7, 78.7] }, { size: 'M', chest: [96.5, 101.6], waist: [81.3, 86.4] },
       { size: 'L', chest: [104.1, 109.2], waist: [88.9, 94] }, { size: 'XL', chest: [111.8, 116.8], waist: [96.5, 101.6] }, { size: 'XXL', chest: [119.4, 124.5], waist: [104.1, 109.2] },
+      { size: '3XL', chest: [127, 132.1], waist: [111.8, 116.8] }, { size: '4XL', chest: [137.2, 142.2], waist: [122, 127] }, { size: '5XL', chest: [157.5, 162.6], waist: [132.1, 137.2] },
     ],
     note: "Guía oficial de Levi's para hombre: medidas del cuerpo, en cm.",
   },
@@ -115,6 +119,57 @@ REAL_CHARTS.push(
     brandId: 'carhartt', group: 'bottoms', title: 'Carhartt WIP · Double Knee Pant (cintura en pulgadas)', sourceUrl: CARHARTT_DK, derived: true,
     rows: [{ size: '26', waist: [64.7, 67.3] }, { size: '27', waist: [67.3, 69.8] }, { size: '28', waist: [69.8, 72.4] }, { size: '29', waist: [72.4, 75.0] }, { size: '30', waist: [75.0, 77.5] }, { size: '31', waist: [77.5, 80.0] }, { size: '32', waist: [80.0, 82.5] }, { size: '33', waist: [82.5, 85.1] }, { size: '34', waist: [85.1, 88.9] }, { size: '36', waist: [88.9, 94.0] }, { size: '38', waist: [94.0, 99.0] }, { size: '40', waist: [99.0, 104.1] }],
     note: 'Carhartt dice que este pantalón tiene tallaje fiel: la talla es tu cintura en pulgadas (32 = 81,3 cm). El rango de cada talla lo repartimos nosotros. El largo (30, 32 o 34) se elige aparte.',
+  },
+);
+
+// Tallas grandes (21 nov 2026): tiendas cuyas guías oficiales llegan a pecho 133 / cintura 130 / cadera 138.
+const JJ_GUIDE = 'https://www.jackjones.com/es-ad/tallas-grandes/guia-de-tallas-plus-size';
+const ADIDAS_TOPS = 'https://www.adidas.es/on/demandware.store/Sites-adidas-ES-Site/es_ES/Page-Include?cid=size-chart-size-m_tops';
+const ADIDAS_PANTS = 'https://www.adidas.es/on/demandware.store/Sites-adidas-ES-Site/es_ES/Page-Include?cid=size-chart-size-m_track';
+const KIABI_GUIDE = 'https://www.kiabi.es/servicios/guia-de-tallas-hombre.html';
+const mid = (pts: [string, number][], half: number) => pts.map(([size, v]) => ({ size, v, lo: v - half, hi: v + half }));
+REAL_CHARTS.push(
+  {
+    brandId: 'jackjones', group: 'tops', title: 'Jack & Jones · Plus Size · partes de arriba', sourceUrl: JJ_GUIDE, derived: true,
+    rows: mid([['2XL', 120], ['3XL', 128], ['4XL', 136], ['5XL', 144], ['6XL', 152], ['7XL', 160], ['8XL', 168]], 4).map((x) => ({ size: x.size, chest: [x.lo, x.hi] as [number, number] })),
+    note: 'La guía Plus Size da un solo pecho por talla (3XL 128, 4XL 136, 5XL 144 cm…). El rango de cada talla es el punto medio entre una y otra.',
+  },
+  {
+    brandId: 'jackjones', group: 'bottoms', title: 'Jack & Jones · Plus Size · pantalones', sourceUrl: JJ_GUIDE, derived: true,
+    rows: [['40', 106, 117], ['42', 111, 122], ['44', 116, 127], ['46', 121, 132], ['48', 126, 137], ['50', 131, 142], ['52', 136, 147], ['54', 141, 152], ['56', 146, 157]]
+      .map(([size, w, h]) => ({ size: String(size), waist: [Number(w) - 2.5, Number(w) + 2.5] as [number, number], hip: [Number(h) - 2.5, Number(h) + 2.5] as [number, number] })),
+    note: 'La guía Plus Size da un valor de cintura del pantalón y de cadera por talla (50 = cintura 131, cadera 142 cm). El rango es el punto medio entre tallas. El largo (30/32/34) va aparte.',
+  },
+  {
+    brandId: 'adidas', group: 'tops', title: 'adidas · hombre · camisetas, sudaderas y chaquetas', sourceUrl: ADIDAS_TOPS,
+    rows: [
+      { size: 'XS', chest: [82, 87], waist: [71, 75], hip: [82, 86] }, { size: 'S', chest: [88, 94], waist: [76, 82], hip: [87, 93] },
+      { size: 'M', chest: [95, 102], waist: [83, 90], hip: [94, 101] }, { size: 'L', chest: [103, 111], waist: [91, 99], hip: [102, 110] },
+      { size: 'XL', chest: [112, 121], waist: [100, 109], hip: [111, 119] }, { size: '2XL', chest: [122, 132], waist: [110, 121], hip: [120, 128] },
+      { size: '3XL', chest: [133, 144], waist: [122, 134], hip: [129, 138] },
+    ],
+    note: 'Guía oficial de adidas.es: medidas del cuerpo, en cm.',
+  },
+  {
+    brandId: 'adidas', group: 'bottoms', title: 'adidas · hombre · pantalones y chándal', sourceUrl: ADIDAS_PANTS,
+    rows: [
+      { size: 'XS', waist: [71, 75], hip: [82, 86] }, { size: 'S', waist: [76, 82], hip: [87, 93] }, { size: 'M', waist: [83, 90], hip: [94, 101] },
+      { size: 'L', waist: [91, 99], hip: [102, 110] }, { size: 'XL', waist: [100, 109], hip: [111, 119] }, { size: '2XL', waist: [110, 121], hip: [120, 128] },
+      { size: '3XL', waist: [122, 134], hip: [129, 138] },
+    ],
+    note: 'Guía oficial de adidas.es (entrepierna 82 cm en 3XL).',
+  },
+  {
+    brandId: 'kiabi', group: 'tops', title: 'Kiabi · tallas grandes · partes de arriba', sourceUrl: KIABI_GUIDE, derived: true,
+    rows: [['3XL', 129, 132], ['4XL', 133, 140], ['5XL', 141, 148], ['6XL', 149, 156], ['7XL', 157, 164]]
+      .map(([size, lo, hi]) => ({ size: String(size), chest: [Number(lo), Number(hi)] as [number, number] })),
+    note: 'Kiabi da el pecho de cada talla (3XL = 132; 4XL = 136 y 140; 5XL = 144 y 148 cm…). Cada talla va desde el valor de la anterior hasta el suyo.',
+  },
+  {
+    brandId: 'kiabi', group: 'bottoms', title: 'Kiabi · tallas grandes · pantalones (54–72)', sourceUrl: KIABI_GUIDE, derived: true,
+    rows: [['54', 118, 128], ['58', 122, 132], ['60', 126, 136], ['62', 130, 140], ['64', 134, 144], ['66', 138, 148], ['68', 142, 152], ['70', 146, 156], ['72', 150, 160]]
+      .map(([size, w, h]) => ({ size: String(size), waist: [Number(w) - 2, Number(w) + 2] as [number, number], hip: [Number(h) - 2, Number(h) + 2] as [number, number] })),
+    note: 'Kiabi da un valor de cintura y cadera por talla (62 = cintura 130, cadera 140 cm). El rango es ±2 cm.',
   },
 );
 

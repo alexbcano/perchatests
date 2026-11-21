@@ -19,6 +19,9 @@ const UOIMG = (ref: string) => `https://imageseu.urbndata.com/is/image/UrbanOutf
 const MS = (slug: string) => `https://milfshakes.es/products/${slug}`;
 const MSIMG = (file: string) => `https://milfshakes.es/cdn/shop/files/${file}`;
 const MSZ = ['S', 'M', 'L', 'XL', 'XXL'];
+const JJ = (path: string) => `https://www.jackjones.com/${path}`;
+const JJIMG = (id: string, v: string, file: string) => `https://images.jackjones.com/${id}/${v}/003/${file}.jpg?format=auto&width=700&quality=90`;
+const NEW = '2026-11-21';
 const SC = (slug: string) => `https://scuffers.com/products/${slug}`;
 const SCZ = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 // Medidas de la prenda en plano que publica Scuffers (iguales en estos tres modelos, leídas en cada ficha).
@@ -28,7 +31,7 @@ const ALPHA7 = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'];
 const EU_T = ['44', '46', '48', '50', '52', '54'];
 const SHOE = ['40', '41', '42', '43', '44', '45'];
 
-interface Extra { img?: string; sizes?: string[]; out?: string[]; names?: string[]; traits?: Product['traits']; noChart?: boolean; garment?: Product['garment'] }
+interface Extra { img?: string; sizes?: string[]; out?: string[]; names?: string[]; traits?: Product['traits']; noChart?: boolean; garment?: Product['garment']; seen?: string }
 
 function r(
   id: string, name: string, brandId: string, type: GarmentType, color: ColorKey, alts: ColorKey[], price: number,
@@ -43,7 +46,7 @@ function r(
     formality: lvl[0], boldness: lvl[1], warmth: lvl[2],
     sizes: (x.sizes ?? []).map((label) => ({ label, inStock: !(x.out ?? []).includes(label) })),
     availability: 'consultar', markets: brand.markets, traits: x.traits, url,
-    imageUrl: x.img, seenAt: REAL_SEEN_AT, colorNames: x.names, noChart: x.noChart, garment: x.garment,
+    imageUrl: x.img, seenAt: x.seen ?? REAL_SEEN_AT, colorNames: x.names, noChart: x.noChart, garment: x.garment,
   };
 }
 
@@ -186,6 +189,20 @@ export const REAL_CATALOG: Product[] = [
   r('s03', 'Sign Dark Hoodie', 'scuffers', 'hoodie', 'negro', [], 79, 'oversized', 'street skater y2k casual', 'POI', [1, 4, 4], SC('sign-black-hoodie'), { sizes: SCZ, noChart: true, traits: { pattern: 'graphic', second: 'blanco' } , garment: SC_FLAT('sign-black-hoodie') }),
   r('s04', 'Lizzie Black Hoodie', 'scuffers', 'hoodie', 'negro', [], 79, 'oversized', 'street skater vintage y2k', 'POI', [1, 4, 4], SC('lizzie-black-hoodie'), { noChart: true, names: ['Negro lavado con capucha gris'] }),
   r('s05', 'Rawest Dark Navy Hoodie', 'scuffers', 'hoodie', 'negro', [], 82, 'oversized', 'street skater casual minimal', 'OI', [1, 3, 5], SC('rawest-black-hoodie'), { noChart: true }),
+  // ── Tallas grandes (21 nov 2026), leídas en cada ficha. La disponibilidad por talla hay que verla en la tienda. ──
+  r('j01', 'Plus Size Camiseta', 'jackjones', 'tee', 'blanco', [], 17.99, 'regular', 'casual minimal street', 'PVOI', [1, 1, 1], JJ('es-es/product/12309402_5_1342751/camiseta-corte-regular-cuello-redondo-plus'), { img: JJIMG('12309402', '5212917', 'jackjones-jjehunterteesscrewnecksnpls-blanca'), names: ['Blanco'], seen: NEW }),
+  r('j02', 'Plus Size Sudadera con capucha', 'jackjones', 'hoodie', 'gris', [], 39.99, 'regular', 'casual street sporty minimal', 'POI', [1, 2, 4], JJ('es-es/product/12308731_2036/sudadera-corte-regular-capucha-plus-sisa-en-disminucion'), { img: JJIMG('12308731', '5212819', 'jackjones-jjelogosweathood2colss27snpls-gris'), names: ['Gris'], seen: NEW }),
+  r('j03', 'Plus Size Sudadera cuello redondo', 'jackjones', 'sweatshirt', 'marino', [], 39.99, 'regular', 'casual minimal street', 'POI', [1, 1, 4], JJ('es-es/product/12308802_2078/sudadera-corte-standard-cuello-redondo-plus'), { img: JJIMG('12308802', '5143832', 'jackjones-jjecartersweatcrewneckpls-azul'), names: ['Azul marino'], seen: NEW }),
+  r('j04', 'Plus Size Vaqueros Chris corte relaxed', 'jackjones', 'jeans', 'denim', [], 39.99, 'relaxed', 'casual street minimal skater', 'PVOI', [1, 1, 2], JJ('es-es/product/12301470_3561/vaqueros-corte-relaxed-plus'), { img: JJIMG('12301470', '5058422', 'jackjones-jjichrisjjoriginalat054snpls-azul'), names: ['Azul medio'], seen: NEW }),
+  r('j05', 'Plus Size Chaqueta acolchada cuello alto', 'jackjones', 'puffer', 'marino', [], 45, 'regular', 'casual minimal sporty', 'OI', [1, 1, 5], JJ('es-es/product/12288236_1318/chaquetas-acolchadas-cuello-alto-plus'), { img: JJIMG('12288236', '4903717', 'jackjones-jprccjakequiltedreversiblejackepls-azul'), names: ['Azul marino'], seen: NEW }),
+  // Estas dos solo se pudieron leer en la web de Austria y de Francia: precio de esa web; cambia el país a España en la tienda.
+  r('j06', 'Plus Size Chino wide leg', 'jackjones', 'wide', 'gris', [], 27.99, 'relaxed', 'casual street skater minimal', 'PVOI', [2, 1, 2], JJ('en-at/product/12273816_2075/wide-leg-fit-plus-5-pockets'), { img: JJIMG('12273816', '4710024', 'jackjones-jpstalexjjoriginal017pls-grey'), names: ['Gris (Iron Gate)'], seen: NEW }),
+  r('j07', 'Plus Size Sobrecamisa de sarga', 'jackjones', 'overshirt', 'marron', [], 30, 'regular', 'casual vintage smart', 'POI', [2, 2, 3], JJ('en-fr/product/12263999_252/relaxed-fit-shirt-collar-plus-shirt'), { img: JJIMG('12263999', '4773631', 'jackjones-jorbradleyollieovershirtlsnoospls-brown'), names: ['Marrón (Monks Robe)'], seen: NEW }),
+  r('a01', 'Sudadera cuello redondo Trefoil Essentials', 'adidas', 'sweatshirt', 'gris', [], 38.5, 'regular', 'casual sporty street', 'POI', [1, 2, 4], 'https://www.adidas.es/sudadera-cuello-redondo-trefoil-essentials/JY6140.html', { img: 'https://assets.adidas.com/images/c_fill,g_auto,w_1200,h_630,f_auto,q_auto/w_500,f_auto,q_auto/b7492e59d7ab490e8e93f4e9dacde842_9366/Sudadera_cuello_redondo_Trefoil_Essentials_Gris_JY6140_21_model.jpg', names: ['Gris jaspeado'], seen: NEW }),
+  // Kiabi: su web no deja leer las fotos; se ven con ilustración.
+  r('b01', 'Plumífero ligero de manga larga', 'kiabi', 'puffer', 'negro', [], 35, 'regular', 'casual minimal sporty', 'OI', [1, 1, 4], 'https://www.kiabi.es/plumifero-ligero-de-manga-larga-negro_P1332663C1332665', { names: ['Negro'], seen: NEW }),
+  r('b02', 'Chaleco acolchado ligero sin mangas', 'kiabi', 'gilet', 'beige', [], 30, 'regular', 'casual gorp minimal', 'PO', [1, 2, 3], 'https://www.kiabi.es/chaleco-acolchado-ligero-sin-mangas-beige_P1332664C1332669', { names: ['Beige'], seen: NEW }),
+  r('b03', 'Cazadora ligera lisa de cuello alto', 'kiabi', 'shell', 'gris', [], 35, 'regular', 'casual sporty minimal', 'PO', [1, 1, 3], 'https://www.kiabi.es/cazadora-ligera-lisa-de-manga-larga-y-cuello-alto-gris_P1004498C1004501', { names: ['Gris'], seen: NEW }),
 ];
 
 // Fotos leídas después en cada ficha.
